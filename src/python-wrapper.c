@@ -7,9 +7,35 @@
 #	include "config.h"
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
 const char* const python_impls[] = { PYTHON_IMPLS };
 
 int main(int argc, char* argv[])
 {
-	return 0;
+	const char* const* i;
+	char buf[BUFSIZ];
+	char* bufp = buf;
+
+	size_t len = strlen(argv[0]);
+
+	if (len + 32 >= BUFSIZ)
+		bufp = malloc(len + 32);
+	memcpy(bufp, argv[0], len);
+	bufp[len] = '-';
+
+	for (i = python_impls; *i; ++i)
+	{
+		strcpy(&bufp[len+1], *i);
+		execvp(bufp, argv);
+	}
+
+	if (bufp != buf)
+		free(bufp);
+	fprintf(stderr, "%s: no supported Python implementation variant found!\n",
+			argv[0]);
+	return 127;
 }
