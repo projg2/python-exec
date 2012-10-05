@@ -41,6 +41,34 @@ int main(int argc, char* argv[])
 					argv[0]);
 	}
 
+	{
+		FILE* f = fopen("/etc/env.d/python/config", "r");
+
+		if (f)
+		{
+			size_t rd = fread(&bufp[len+1], 1, 30, f);
+
+			if (rd > 0 && feof(f))
+			{
+				char* vsep;
+
+				bufp[len+rd+1] = 0;
+				if (bufp[len+rd] == '\n')
+					bufp[len+rd] = 0;
+
+				vsep = strchr(&bufp[len+1], '.');
+				if (vsep)
+					*vsep = '_';
+
+				fclose(f);
+
+				execvp(bufp, argv);
+			}
+			else
+				fclose(f);
+		}
+	}
+
 	for (i = python_impls; *i; ++i)
 	{
 		strcpy(&bufp[len+1], *i);
