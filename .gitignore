@@ -1,5 +1,8 @@
 Makefile
 Makefile.in
+.deps
+.dirstamp
+*.o
 
 /aclocal.m4
 /autom4te.cache/
@@ -7,3 +10,5 @@ Makefile.in
 /config.*
 /configure
 /stamp-h1
+
+/python-wrapper-r1
