@@ -22,10 +22,24 @@ int main(int argc, char* argv[])
 
 	size_t len = strlen(argv[0]);
 
+	const char* epython = getenv("EPYTHON");
+
 	if (len + 32 >= BUFSIZ)
 		bufp = malloc(len + 32);
 	memcpy(bufp, argv[0], len);
 	bufp[len] = '-';
+
+	if (epython)
+	{
+		if (strlen(epython) <= 30)
+		{
+			strcpy(&bufp[len+1], epython);
+			execvp(bufp, argv);
+		}
+		else
+			fprintf(stderr, "%s: EPYTHON value invalid (too long).\n",
+					argv[0]);
+	}
 
 	for (i = python_impls; *i; ++i)
 	{
