@@ -7,6 +7,8 @@
 #	include "config.h"
 #endif
 
+const char* const python_impls[] = { PYTHON_IMPLS };
+
 int main(int argc, char* argv[])
 {
 	return 0;
