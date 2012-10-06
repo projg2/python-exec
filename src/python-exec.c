@@ -56,12 +56,7 @@ int main(int argc, char* argv[])
 				if (bufp[len+rd] == '\n')
 					bufp[len+rd] = 0;
 
-				vsep = strchr(&bufp[len+1], '.');
-				if (vsep)
-					*vsep = '_';
-
 				fclose(f);
-
 				execvp(bufp, argv);
 			}
 			else
