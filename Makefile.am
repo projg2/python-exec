@@ -1,6 +1,6 @@
-bin_PROGRAMS = python-wrapper-r1
+bin_PROGRAMS = python-exec
 
-python_wrapper_r1_SOURCES = src/python-wrapper.c
+python_exec_SOURCES = src/python-exec.c
 
 EXTRA_DIST = NEWS
 NEWS: configure.ac Makefile.am
