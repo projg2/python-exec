@@ -11,7 +11,7 @@ AC_USE_SYSTEM_EXTENSIONS
 
 AC_ARG_WITH([python-impls],
 	[AS_HELP_STRING([--with-python-impls],
-		[The list of supported Python, in order of preference])])
+		[The list of supported Python, most preferred last])])
 AS_CASE(["$with_python_impls"], [yes|no|""],
 [
 	AC_MSG_ERROR([Python implementations must be specified using --with-python-impls])
