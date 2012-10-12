@@ -61,8 +61,6 @@ int main(int argc, char* argv[])
 
 			if (rd > 0 && feof(f))
 			{
-				char* vsep;
-
 				bufp[len+rd+1] = 0;
 				if (bufp[len+rd] == '\n')
 					bufp[len+rd] = 0;
