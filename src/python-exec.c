@@ -1,4 +1,5 @@
-/* python-wrapper-r1
+/* python-exec -- a Gentoo tool to choose the correct Python script
+ * variant for currently selected Python implementation.
  * (c) 2012 Michał Górny
  * Licensed under the terms of the 2-clause BSD license.
  */
@@ -11,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 const char* const python_impls[] = { PYTHON_IMPLS };
 
@@ -25,7 +27,15 @@ int main(int argc, char* argv[])
 	const char* epython = getenv("EPYTHON");
 
 	if (len + 32 >= BUFSIZ)
+	{
 		bufp = malloc(len + 32);
+		if (!bufp)
+		{
+			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
+					argv[0]);
+			return 1;
+		}
+	}
 	memcpy(bufp, argv[0], len);
 	bufp[len] = '-';
 
@@ -42,7 +52,8 @@ int main(int argc, char* argv[])
 	}
 
 	{
-		FILE* f = fopen("/etc/env.d/python/config", "r");
+		const char* const config_path = "/etc/env.d/python/config";
+		FILE* f = fopen(config_path, "r");
 
 		if (f)
 		{
@@ -62,6 +73,9 @@ int main(int argc, char* argv[])
 			else
 				fclose(f);
 		}
+		else
+			fprintf(stderr, "%s: unable to open %s: %s.\n",
+					argv[0], config_path, strerror(errno));
 	}
 
 	for (i = python_impls; *i; ++i)
