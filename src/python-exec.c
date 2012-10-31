@@ -55,6 +55,20 @@ static int try_file(char* bufp, const char* path)
 	return !!f;
 }
 
+static int try_symlink(char* bufp, const char* path)
+{
+	size_t rd = readlink(path, bufp, 30);
+
+	/* 30 could mean that the name is too long */
+	if (rd > 0 && rd < 30)
+	{
+		bufp[rd] = 0;
+		return 1;
+	}
+
+	return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	const char* const* i;
@@ -82,6 +96,10 @@ int main(int argc, char* argv[])
 	if (try_env(bufpy, "EPYTHON"))
 		execvp(bufp, argv);
 	if (try_file(bufpy, "/etc/env.d/python/config"))
+		execvp(bufp, argv);
+	if (try_symlink(bufpy, "/usr/bin/python2"))
+		execvp(bufp, argv);
+	if (try_symlink(bufpy, "/usr/bin/python3"))
 		execvp(bufp, argv);
 
 	for (i = python_impls; *i; ++i)
