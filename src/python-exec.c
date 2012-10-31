@@ -15,6 +15,7 @@
 #include <errno.h>
 
 const char* const python_impls[] = { PYTHON_IMPLS };
+const size_t max_epython_len = 30;
 
 static int try_env(char* bufp, const char* variable)
 {
@@ -22,7 +23,7 @@ static int try_env(char* bufp, const char* variable)
 
 	if (epython)
 	{
-		if (strlen(epython) <= 30)
+		if (strlen(epython) <= max_epython_len)
 		{
 			strcpy(bufp, epython);
 			return 1;
@@ -40,7 +41,7 @@ static int try_file(char* bufp, const char* path)
 
 	if (f)
 	{
-		size_t rd = fread(bufp, 1, 30, f);
+		size_t rd = fread(bufp, 1, max_epython_len, f);
 
 		if (rd > 0 && feof(f))
 		{
@@ -57,10 +58,10 @@ static int try_file(char* bufp, const char* path)
 
 static int try_symlink(char* bufp, const char* path)
 {
-	size_t rd = readlink(path, bufp, 30);
+	size_t rd = readlink(path, bufp, max_epython_len);
 
-	/* 30 could mean that the name is too long */
-	if (rd > 0 && rd < 30)
+	/* [max_epython_len] could mean that the name is too long */
+	if (rd > 0 && rd < max_epython_len)
 	{
 		bufp[rd] = 0;
 		return 1;
@@ -78,9 +79,10 @@ int main(int argc, char* argv[])
 
 	size_t len = strlen(argv[0]);
 
-	if (len + 32 >= BUFSIZ)
+	/* 2 for the hyphen and the null terminator */
+	if (len + max_epython_len + 2 >= BUFSIZ)
 	{
-		bufp = malloc(len + 32);
+		bufp = malloc(len + max_epython_len + 2);
 		if (!bufp)
 		{
 			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
