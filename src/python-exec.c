@@ -97,11 +97,11 @@ int main(int argc, char* argv[])
 
 	if (try_env(bufpy, "EPYTHON"))
 		execvp(bufp, argv);
-	if (try_file(bufpy, "/etc/env.d/python/config"))
+	if (try_file(bufpy, EPREFIX "/etc/env.d/python/config"))
 		execvp(bufp, argv);
-	if (try_symlink(bufpy, "/usr/bin/python2"))
+	if (try_symlink(bufpy, EPREFIX "/usr/bin/python2"))
 		execvp(bufp, argv);
-	if (try_symlink(bufpy, "/usr/bin/python3"))
+	if (try_symlink(bufpy, EPREFIX "/usr/bin/python3"))
 		execvp(bufp, argv);
 
 	for (i = python_impls; *i; ++i)

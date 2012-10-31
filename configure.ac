@@ -4,7 +4,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_ARG_WITH([python-impls],
-	[AS_HELP_STRING([--with-python-impls],
+	[AS_HELP_STRING([--with-python-impls=IMPLS],
 		[The list of supported Python, most preferred last])])
 AS_CASE(["$with_python_impls"], [yes|no|""],
 [
@@ -20,6 +20,15 @@ done
 
 AC_DEFINE_UNQUOTED([PYTHON_IMPLS], [$python_impls],
 	[Set to the list of supported Python implementations])
+
+AC_ARG_WITH([eprefix],
+	[AS_HELP_STRING([--with-eprefix=EPREFIX],
+		[The Gentoo Prefix base path (EPREFIX)])])
+AS_CASE(["$with_eprefix"],
+	[yes], [AC_MSG_ERROR([--with-eprefix takes a value])],
+	[no], [with_eprefix=])
+AC_DEFINE_UNQUOTED([EPREFIX], ["$with_eprefix"],
+	[Set to the Gentoo Prefix EPREFIX (if building for Prefix)])
 
 AM_INIT_AUTOMAKE([1.6 foreign dist-bzip2 subdir-objects])
 
