@@ -16,15 +16,53 @@
 
 const char* const python_impls[] = { PYTHON_IMPLS };
 
+static int try_env(char* bufp, const char* variable)
+{
+	const char* epython = getenv(variable);
+
+	if (epython)
+	{
+		if (strlen(epython) <= 30)
+		{
+			strcpy(bufp, epython);
+			return 1;
+		}
+		else
+			fprintf(stderr, "EPYTHON value invalid (too long).\n");
+	}
+
+	return 0;
+}
+
+static int try_file(char* bufp, const char* path)
+{
+	FILE* f = fopen(path, "r");
+
+	if (f)
+	{
+		size_t rd = fread(bufp, 1, 30, f);
+
+		if (rd > 0 && feof(f))
+		{
+			bufp[rd] = 0;
+			if (bufp[rd-1] == '\n')
+				bufp[rd-1] = 0;
+		}
+
+		fclose(f);
+	}
+
+	return !!f;
+}
+
 int main(int argc, char* argv[])
 {
 	const char* const* i;
 	char buf[BUFSIZ];
 	char* bufp = buf;
+	char* bufpy;
 
 	size_t len = strlen(argv[0]);
-
-	const char* epython = getenv("EPYTHON");
 
 	if (len + 32 >= BUFSIZ)
 	{
@@ -39,42 +77,12 @@ int main(int argc, char* argv[])
 	memcpy(bufp, argv[0], len);
 	bufp[len] = '-';
 
-	if (epython)
-	{
-		if (strlen(epython) <= 30)
-		{
-			strcpy(&bufp[len+1], epython);
-			execvp(bufp, argv);
-		}
-		else
-			fprintf(stderr, "%s: EPYTHON value invalid (too long).\n",
-					argv[0]);
-	}
+	bufpy = &bufp[len+1];
 
-	{
-		const char* const config_path = "/etc/env.d/python/config";
-		FILE* f = fopen(config_path, "r");
-
-		if (f)
-		{
-			size_t rd = fread(&bufp[len+1], 1, 30, f);
-
-			if (rd > 0 && feof(f))
-			{
-				bufp[len+rd+1] = 0;
-				if (bufp[len+rd] == '\n')
-					bufp[len+rd] = 0;
-
-				fclose(f);
-				execvp(bufp, argv);
-			}
-			else
-				fclose(f);
-		}
-		else
-			fprintf(stderr, "%s: unable to open %s: %s.\n",
-					argv[0], config_path, strerror(errno));
-	}
+	if (try_env(bufpy, "EPYTHON"))
+		execvp(bufp, argv);
+	if (try_file(bufpy, "/etc/env.d/python/config"))
+		execvp(bufp, argv);
 
 	for (i = python_impls; *i; ++i)
 	{
