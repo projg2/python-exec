@@ -77,7 +77,9 @@ int main(int argc, char* argv[])
 	char* bufp = buf;
 	char* bufpy;
 
-	size_t len = strlen(argv[0]);
+	const char* script = argv[0];
+
+	size_t len = strlen(script);
 
 	/* 2 for the hyphen and the null terminator */
 	if (len + max_epython_len + 2 >= BUFSIZ)
@@ -86,11 +88,11 @@ int main(int argc, char* argv[])
 		if (!bufp)
 		{
 			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
-					argv[0]);
+					script);
 			return 1;
 		}
 	}
-	memcpy(bufp, argv[0], len);
+	memcpy(bufp, script, len);
 	bufp[len] = '-';
 
 	bufpy = &bufp[len+1];
@@ -113,6 +115,6 @@ int main(int argc, char* argv[])
 	if (bufp != buf)
 		free(bufp);
 	fprintf(stderr, "%s: no supported Python implementation variant found!\n",
-			argv[0]);
+			script);
 	return 127;
 }
