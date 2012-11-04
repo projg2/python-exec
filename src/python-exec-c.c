@@ -70,6 +70,14 @@ static int try_symlink(char* bufp, const char* path)
 	return 0;
 }
 
+static void shift_argv(char* argv[])
+{
+	char** i;
+
+	for (i = argv; *i; ++i)
+		i[0] = i[1];
+}
+
 int main(int argc, char* argv[])
 {
 	const char* const* i;
@@ -77,39 +85,49 @@ int main(int argc, char* argv[])
 	char* bufp = buf;
 	char* bufpy;
 
-	const char* script = argv[0];
+	const char* script = argv[1];
 
-	size_t len = strlen(script);
-
-	/* 2 for the hyphen and the null terminator */
-	if (len + max_epython_len + 2 >= BUFSIZ)
+	if (!script)
 	{
-		bufp = malloc(len + max_epython_len + 2);
-		if (!bufp)
-		{
-			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
-					script);
-			return 1;
-		}
+		fprintf(stderr, "Usage: %s <script>\n", argv[0]);
+		return EXIT_FAILURE;
 	}
-	memcpy(bufp, script, len);
-	bufp[len] = '-';
 
-	bufpy = &bufp[len+1];
-
-	if (try_env(bufpy, "EPYTHON"))
-		execvp(bufp, argv);
-	if (try_file(bufpy, EPREFIX "/etc/env.d/python/config"))
-		execvp(bufp, argv);
-	if (try_symlink(bufpy, EPREFIX "/usr/bin/python2"))
-		execvp(bufp, argv);
-	if (try_symlink(bufpy, EPREFIX "/usr/bin/python3"))
-		execvp(bufp, argv);
-
-	for (i = python_impls; *i; ++i)
 	{
-		strcpy(&bufp[len+1], *i);
-		execvp(bufp, argv);
+		size_t len = strlen(script);
+
+		/* 2 for the hyphen and the null terminator */
+		if (len + max_epython_len + 2 >= BUFSIZ)
+		{
+			bufp = malloc(len + max_epython_len + 2);
+			if (!bufp)
+			{
+				fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
+						script);
+				return 1;
+			}
+		}
+		memcpy(bufp, script, len);
+		bufp[len] = '-';
+
+		shift_argv(argv);
+
+		bufpy = &bufp[len+1];
+
+		if (try_env(bufpy, "EPYTHON"))
+			execvp(bufp, argv);
+		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config"))
+			execvp(bufp, argv);
+		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2"))
+			execvp(bufp, argv);
+		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3"))
+			execvp(bufp, argv);
+
+		for (i = python_impls; *i; ++i)
+		{
+			strcpy(&bufp[len+1], *i);
+			execvp(bufp, argv);
+		}
 	}
 
 	if (bufp != buf)
