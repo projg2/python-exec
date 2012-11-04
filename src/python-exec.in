@@ -1,1 +1,13 @@
 #!@bindir@/python-exec-c
+# vim:fileencoding=utf-8:ft=python
+# (c) 2012 Michał Górny
+# Released under the terms of the 2-clause BSD license.
+#
+# This is not the script you are looking for. This is just a wrapper.
+# The actual scripts of this application were installed with -python*,
+# -pypy* or -jython* suffixes. You are most likely looking for one
+# of those.
+
+import os, sys
+
+os.execl('@bindir@/python-exec-c', sys.argv[0], *sys.argv)
