@@ -8,6 +8,11 @@
 # -pypy* or -jython* suffixes. You are most likely looking for one
 # of those.
 
-import os, sys
+import os, os.path, sys
 
-os.execl('@bindir@/python-exec-c', sys.argv[0], *sys.argv)
+# XXX: avoid sys.executable if possible
+epython = os.path.basename(os.path.realpath(sys.executable))
+self = sys.argv[0] + '-' + epython
+
+# XXX: avoid re-executing python (slow!)
+os.execl(sys.executable, sys.executable, self, *sys.argv[1:])
