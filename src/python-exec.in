@@ -11,7 +11,7 @@
 import os, os.path, sys
 
 # XXX: avoid sys.executable if possible
-epython = os.path.basename(os.path.realpath(sys.executable))
+epython = os.path.basename(sys.executable)
 self = sys.argv[0] + '-' + epython
 
 # XXX: avoid re-executing python (slow!)
