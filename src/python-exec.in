@@ -18,15 +18,20 @@ self = sys.argv[0] + '-' + epython
 __file__ = self
 sys.argv[0] = self
 
-kwargs = {}
-if sys.version_info[0] >= 3:
-	import tokenize
+try:
+	kwargs = {}
+	if sys.version_info[0] >= 3:
+		import tokenize
 
-	# need to provide encoding
-	with open(self, 'rb') as f:
-		kwargs['encoding'] = tokenize.detect_encoding(f.readline)[0]
+		# need to provide encoding
+		with open(self, 'rb') as f:
+			kwargs['encoding'] = tokenize.detect_encoding(f.readline)[0]
 
-with open(self, 'r', **kwargs) as f:
-	data = f.read()
+	with open(self, 'r', **kwargs) as f:
+		data = f.read()
+except IOError:
+	sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
+			% epython)
+	sys.exit(127)
 
 exec(data)
