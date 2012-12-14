@@ -11,10 +11,12 @@
 from __future__ import with_statement
 import os.path, sys
 
-# XXX: avoid sys.executable if possible
-epython = os.path.basename(sys.executable)
-self = sys.argv[0] + '-' + epython
+try:
+	from epython import EPYTHON
+except ImportError:
+	EPYTHON = os.path.basename(sys.executable)
 
+self = sys.argv[0] + '-' + EPYTHON
 __file__ = self
 sys.argv[0] = self
 
@@ -31,7 +33,7 @@ try:
 		data = f.read()
 except IOError:
 	sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
-			% epython)
+			% EPYTHON)
 	sys.exit(127)
 
 exec(data)
