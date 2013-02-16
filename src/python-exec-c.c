@@ -17,7 +17,7 @@
 /* All possible EPYTHON values, provided to the configure script. */
 const char* const python_impls[] = { PYTHON_IMPLS };
 /* Maximum length of an EPYTHON value. */
-const size_t max_epython_len = 30;
+const size_t max_epython_len = MAX_EPYTHON_LEN;
 
 /**
  * Try to obtain EPYTHON from an environment variable.

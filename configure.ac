@@ -13,13 +13,20 @@ AS_CASE(["$with_python_impls"], [yes|no|""],
 
 # generate array of implementations
 python_impls='0'
+max_len=0
 for i in $with_python_impls
 do
 	python_impls="\"$i\", $python_impls"
+	AS_IF([test $max_len -lt ${#i}],
+	[
+		max_len=${#i}
+	])
 done
 
 AC_DEFINE_UNQUOTED([PYTHON_IMPLS], [$python_impls],
 	[Set to the list of supported Python implementations])
+AC_DEFINE_UNQUOTED([MAX_EPYTHON_LEN], [$max_len],
+	[Set to the maximum length of EPYTHON (implementation name)])
 
 AC_ARG_WITH([eprefix],
 	[AS_HELP_STRING([--with-eprefix=EPREFIX],
