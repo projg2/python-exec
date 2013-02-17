@@ -20,52 +20,57 @@ const char* const python_impls[] = { PYTHON_IMPLS };
 const size_t max_epython_len = MAX_EPYTHON_LEN;
 
 /**
- * Try to obtain EPYTHON from an environment variable.
+ * Try to obtain the value of an environment variable.
  *
  * @bufp points to the space in the buffer where the value shall be
- * written (first byte after the hyphen). The buffer must have at least
- * max_epython_len space.
+ * written (first byte after the hyphen).
  *
  * @variable contains the environment variable name.
  *
+ * @max_len specifies the maximum value length. The buffer must have
+ * at least one byte more for the null terminator.
+ *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_env(char* bufp, const char* variable)
+static int try_env(char* bufp, const char* variable, size_t max_len)
 {
 	const char* epython = getenv(variable);
 
 	if (epython)
 	{
-		if (strlen(epython) <= max_epython_len)
+		if (strlen(epython) <= max_len)
 		{
 			strcpy(bufp, epython);
 			return 1;
 		}
 		else
-			fprintf(stderr, "EPYTHON value invalid (too long).\n");
+			fprintf(stderr, "${%s} value invalid (too long).\n",
+					variable);
 	}
 
 	return 0;
 }
 
 /**
- * Try to read EPYTHON from a regular file.
+ * Try to read contents of a regular file.
  *
  * @bufp points to the space in the buffer where the value shall be
- * written (first byte after the hyphen). The buffer must have at least
- * max_epython_len space.
+ * written (first byte after the hyphen).
  *
  * @variable contains the file path.
  *
+ * @max_len specifies the maximum value length. The buffer must have
+ * at least one byte more for the null terminator.
+ *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_file(char* bufp, const char* path)
+static int try_file(char* bufp, const char* path, size_t max_len)
 {
 	FILE* f = fopen(path, "r");
 
 	if (f)
 	{
-		size_t rd = fread(bufp, 1, max_epython_len, f);
+		size_t rd = fread(bufp, 1, max_len, f);
 
 		if (rd > 0 && feof(f))
 		{
@@ -81,23 +86,25 @@ static int try_file(char* bufp, const char* path)
 }
 
 /**
- * Try to obtain EPYTHON from a symlink target.
+ * Try to read a symlink target.
  *
- * @bufp points to the space in the buffer where the value shall be
- * written (first byte after the hyphen). The buffer must have at least
- * max_epython_len space.
+ * @bufp points to the space in the buffer where the target shall be
+ * written (first byte after the hyphen).
  *
  * @variable contains the symlink path.
  *
+ * @max_len specifies the maximum value length. The buffer must have
+ * at least one byte more for the null terminator.
+ *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_symlink(char* bufp, const char* path)
+static int try_symlink(char* bufp, const char* path, size_t max_len)
 {
 	/* 1 for the null terminator with max length */
-	size_t rd = readlink(path, bufp, max_epython_len + 1);
+	size_t rd = readlink(path, bufp, max_len + 1);
 
-	/* [max_epython_len+1] could mean that the name is too long */
-	if (rd > 0 && rd < max_epython_len + 1)
+	/* [max_len] could mean that the name is too long */
+	if (rd > 0 && rd < max_len + 1)
 	{
 		bufp[rd] = 0;
 		return 1;
@@ -211,13 +218,13 @@ int main(int argc, char* argv[])
 		 *
 		 * 4) uses the eclass-defined order.
 		 */
-		if (try_env(bufpy, "EPYTHON"))
+		if (try_env(bufpy, "EPYTHON", max_epython_len))
 			execvp(bufp, argv);
-		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config"))
+		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config", max_epython_len))
 			execvp(bufp, argv);
-		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2"))
+		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2", max_epython_len))
 			execvp(bufp, argv);
-		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3"))
+		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3", max_epython_len))
 			execvp(bufp, argv);
 
 		for (i = python_impls; *i; ++i)
