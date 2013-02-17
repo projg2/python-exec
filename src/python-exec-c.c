@@ -14,6 +14,9 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <limits.h>
+#include <sys/stat.h>
+
 /* All possible EPYTHON values, provided to the configure script. */
 const char* const python_impls[] = { PYTHON_IMPLS };
 /* Maximum length of an EPYTHON value. */
@@ -100,8 +103,11 @@ static int try_file(char* bufp, const char* path, size_t max_len)
  */
 static int try_symlink(char* bufp, const char* path, size_t max_len)
 {
+	size_t rd;
+
+	errno = 0;
 	/* 1 for the null terminator with max length */
-	size_t rd = readlink(path, bufp, max_len + 1);
+	rd = readlink(path, bufp, max_len + 1);
 
 	/* [max_len] could mean that the name is too long */
 	if (rd > 0 && rd < max_len + 1)
@@ -166,6 +172,34 @@ static int expand_buffer(char** buf, size_t* buf_size, size_t req_size)
 }
 
 /**
+ * Obtain symlink length. Assumes that symlinks don't change during
+ * the process.
+ *
+ * @path contains the path to the symlink.
+ *
+ * Returns the symlink length or 0 if the file is not a symlink.
+ */
+size_t get_symlink_length(const char* path)
+{
+	struct stat st;
+
+	errno = 0;
+	if (!lstat(path, &st) && S_ISLNK(st.st_mode))
+	{
+		/* how are we supposed to read that? */
+		if (st.st_size > SSIZE_MAX)
+		{
+			errno = EINVAL;
+			return 0;
+		}
+
+		return st.st_size;
+	}
+
+	return 0;
+}
+
+/**
  * Usage: python-exec <script> [<argv>...]
  *
  * python-exec tries to execute <script> with most preferred Python
@@ -182,29 +216,53 @@ int main(int argc, char* argv[])
 	char* bufpy;
 
 	const char* script = argv[1];
+	int symlink_resolution = 0;
 
-	if (!script)
+	if (!script && !script[0])
 	{
 		fprintf(stderr, "Usage: %s <script>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
+	shift_argv(argv);
+
+	while (1)
 	{
-		size_t len = strlen(script);
+		size_t len = symlink_resolution
+			? get_symlink_length(script)
+			: strlen(script);
+
+		if (!len)
+		{
+			if (errno != 0)
+				fprintf(stderr, "%s: unable to stat symlink at %s: %s\n",
+						script, bufp, strerror(errno));
+			else /* no more symlinks to try */
+				fprintf(stderr, "%s: no supported Python implementation variant found!\n",
+						script);
+			break;
+		}
 
 		/* 2 is for the hyphen and the null terminator. */
 		if (!expand_buffer(&bufp, &buf_size, len + max_epython_len + 2))
 		{
 			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
 					script);
-			return EXIT_FAILURE;
+			break;
 		}
-		memcpy(bufp, script, len);
-		bufp[len] = '-';
 
-		shift_argv(argv);
+		if (!symlink_resolution)
+			memcpy(bufp, script, len);
+		else if (!try_symlink(bufp, bufp, len))
+		{
+			fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
+					script, bufp,
+					errno != 0 ? strerror(errno) : "target length changed");
+			break;
+		}
 
 		bufpy = &bufp[len+1];
+		bufpy[-1] = '-';
 
 		/**
 		 * The implementation check order:
@@ -229,9 +287,15 @@ int main(int argc, char* argv[])
 
 		for (i = python_impls; *i; ++i)
 		{
-			strcpy(&bufp[len+1], *i);
+			strcpy(bufpy, *i);
 			execvp(bufp, argv);
 		}
+
+		/**
+		 * Strip the hyphen back and try symlink resolution.
+		 */
+		bufpy[-1] = 0;
+		symlink_resolution = 1;
 	}
 
 	/* If no execvp() succeeded, that means we either don't have
@@ -240,7 +304,5 @@ int main(int argc, char* argv[])
 	 */
 	if (bufp != buf)
 		free(bufp);
-	fprintf(stderr, "%s: no supported Python implementation variant found!\n",
-			script);
 	return 127;
 }
