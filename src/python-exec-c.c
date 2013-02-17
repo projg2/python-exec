@@ -93,10 +93,11 @@ static int try_file(char* bufp, const char* path)
  */
 static int try_symlink(char* bufp, const char* path)
 {
-	size_t rd = readlink(path, bufp, max_epython_len);
+	/* 1 for the null terminator with max length */
+	size_t rd = readlink(path, bufp, max_epython_len + 1);
 
-	/* [max_epython_len] could mean that the name is too long */
-	if (rd > 0 && rd < max_epython_len)
+	/* [max_epython_len+1] could mean that the name is too long */
+	if (rd > 0 && rd < max_epython_len + 1)
 	{
 		bufp[rd] = 0;
 		return 1;
