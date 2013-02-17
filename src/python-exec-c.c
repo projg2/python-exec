@@ -122,6 +122,42 @@ static void shift_argv(char* argv[])
 }
 
 /**
+ * Check the buffer size and reallocate it if necessary.
+ *
+ * Assumes that buffers <= BUFSIZ are stack-allocated,
+ * and heap-allocated above that size.
+ *
+ * @buf is the pointer to the buffer address holder.
+ *
+ * @buf_size is the pointer to the buffer size holder.
+ *
+ * @req_size is the requested buffer size.
+ *
+ * Returns 1 on success, or 0 if memory allocation failed.
+ * In the latter case, buffer is left unchanged.
+ */
+static int expand_buffer(char** buf, size_t* buf_size, size_t req_size)
+{
+	if (req_size >= *buf_size)
+	{
+		char *new_buf;
+
+		/* first alloc */
+		if (*buf_size <= BUFSIZ)
+			new_buf = malloc(req_size);
+		else /* realloc */
+			new_buf = realloc(*buf, req_size);
+
+		if (!new_buf)
+			return 0;
+		*buf = new_buf;
+		*buf_size = req_size;
+	}
+
+	return 1;
+}
+
+/**
  * Usage: python-exec <script> [<argv>...]
  *
  * python-exec tries to execute <script> with most preferred Python
@@ -133,6 +169,7 @@ int main(int argc, char* argv[])
 {
 	const char* const* i;
 	char buf[BUFSIZ];
+	size_t buf_size = sizeof(buf);
 	char* bufp = buf;
 	char* bufpy;
 
@@ -147,20 +184,12 @@ int main(int argc, char* argv[])
 	{
 		size_t len = strlen(script);
 
-		/* Check whether our stack buffer is large enough. If necessary,
-		 * allocate a new one from the heap.
-		 *
-		 * 2 is for the hyphen and the null terminator.
-		 */
-		if (len + max_epython_len + 2 >= BUFSIZ)
+		/* 2 is for the hyphen and the null terminator. */
+		if (!expand_buffer(&bufp, &buf_size, len + max_epython_len + 2))
 		{
-			bufp = malloc(len + max_epython_len + 2);
-			if (!bufp)
-			{
-				fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
-						script);
-				return EXIT_FAILURE;
-			}
+			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
+					script);
+			return EXIT_FAILURE;
 		}
 		memcpy(bufp, script, len);
 		bufp[len] = '-';
