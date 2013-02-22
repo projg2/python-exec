@@ -16,9 +16,7 @@ try:
 except ImportError:
 	EPYTHON = os.path.basename(sys.executable)
 
-self = sys.argv[0] + '-' + EPYTHON
-__file__ = self
-sys.argv[0] = self
+__file__ = sys.argv[0] + '-' + EPYTHON
 
 try:
 	kwargs = {}
@@ -26,14 +24,15 @@ try:
 		import tokenize
 
 		# need to provide encoding
-		with open(self, 'rb') as f:
+		with open(__file__, 'rb') as f:
 			kwargs['encoding'] = tokenize.detect_encoding(f.readline)[0]
 
-	with open(self, 'r', **kwargs) as f:
+	with open(__file__, 'r', **kwargs) as f:
 		data = f.read()
 except IOError:
 	sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
 			% EPYTHON)
 	sys.exit(127)
 
+sys.argv[0] = __file__
 exec(data)
