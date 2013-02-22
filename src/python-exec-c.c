@@ -22,6 +22,8 @@ const char* const python_impls[] = { PYTHON_IMPLS };
 /* Maximum length of an EPYTHON value. */
 const size_t max_epython_len = MAX_EPYTHON_LEN;
 
+const char path_sep = '/';
+
 /**
  * Try to obtain the value of an environment variable.
  *
@@ -228,9 +230,20 @@ int main(int argc, char* argv[])
 
 	while (1)
 	{
-		size_t len = symlink_resolution
-			? get_symlink_length(script)
-			: strlen(script);
+		size_t len = strlen(script);
+		char* fnpos;
+
+		if (symlink_resolution)
+		{
+			fnpos = strrchr(bufp, path_sep);
+			if (fnpos)
+				len -= strlen(&fnpos[1]);
+			else
+				len = 0;
+
+			/* XXX: subtract filename length, we will strip it anyway */
+			len += get_symlink_length(script);
+		}
 
 		if (!len)
 		{
@@ -253,12 +266,28 @@ int main(int argc, char* argv[])
 
 		if (!symlink_resolution)
 			memcpy(bufp, script, len);
-		else if (!try_symlink(bufp, bufp, len))
+		else
 		{
-			fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
-					script, bufp,
-					errno != 0 ? strerror(errno) : "target length changed");
-			break;
+			/**
+			 * In order to support relative symlinks, preserve
+			 * the current directory (but strip filename).
+			 */
+			if (!fnpos)
+				fnpos = bufp;
+			else
+				++fnpos;
+
+			if (!try_symlink(fnpos, bufp, len))
+			{
+				fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
+						script, bufp,
+						errno != 0 ? strerror(errno) : "target length changed");
+				break;
+			}
+
+			/* Symlink is absolute, move the path. */
+			if (*fnpos == path_sep && fnpos != bufp)
+				memmove(bufp, fnpos, strlen(fnpos) + 1);
 		}
 
 		bufpy = &bufp[len+1];
