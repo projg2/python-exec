@@ -9,30 +9,43 @@
 # of those.
 
 from __future__ import with_statement
-import os.path, sys
+import os, os.path, sys
 
 try:
 	from epython import EPYTHON
 except ImportError:
 	EPYTHON = os.path.basename(sys.executable)
 
-__file__ = sys.argv[0] + '-' + EPYTHON
+# In the loop:
+# sys.argv[0] keeps the 'bare' name
+# __file__ keeps the 'full' name
 
-try:
-	kwargs = {}
-	if sys.version_info[0] >= 3:
-		import tokenize
+while True:
+	__file__ = sys.argv[0] + '-' + EPYTHON
 
-		# need to provide encoding
-		with open(__file__, 'rb') as f:
-			kwargs['encoding'] = tokenize.detect_encoding(f.readline)[0]
+	try:
+		kwargs = {}
+		if sys.version_info[0] >= 3:
+			import tokenize
 
-	with open(__file__, 'r', **kwargs) as f:
-		data = f.read()
-except IOError:
-	sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
-			% EPYTHON)
-	sys.exit(127)
+			# need to provide encoding
+			with open(__file__, 'rb') as f:
+				kwargs['encoding'] = tokenize.detect_encoding(f.readline)[0]
+
+		with open(__file__, 'r', **kwargs) as f:
+			data = f.read()
+	except IOError:
+		# follow symlinks
+		try:
+			sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
+					os.readlink(sys.argv[0]))
+		except OSError:
+			# no more symlinks? then it's time to fail.
+			sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
+					% EPYTHON)
+			sys.exit(127)
+	else:
+		break
 
 sys.argv[0] = __file__
 exec(data)
