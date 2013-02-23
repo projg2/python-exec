@@ -25,7 +25,7 @@ tests/python-exec: src/python-exec.in
 
 LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
 
-TESTS = tests/epython-test
+TESTS = tests/epython-test tests/eselect-test
 
 EXTRA_DIST += NEWS
 NEWS: configure.ac Makefile.am

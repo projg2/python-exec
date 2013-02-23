@@ -1,5 +1,4 @@
 #!/bin/sh
-# Test whether EPYTHON is respected.
 
 echo "${TEST_NAME} -- test whether EPYTHON is respected"
 
