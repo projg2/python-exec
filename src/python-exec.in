@@ -35,11 +35,11 @@ while True:
 		with open(__file__, 'r', **kwargs) as f:
 			data = f.read()
 	except IOError:
-		# follow symlinks
+		# follow symlinks (if supported)
 		try:
 			sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
 					os.readlink(sys.argv[0]))
-		except OSError:
+		except (OSError, AttributeError):
 			# no more symlinks? then it's time to fail.
 			sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
 					% EPYTHON)
