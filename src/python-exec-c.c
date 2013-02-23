@@ -128,22 +128,6 @@ static int try_symlink(char* bufp, const char* path, size_t max_len)
 #endif
 
 /**
- * Shift the argv array one element left. Left-most element will be
- * removed, right-most will be replaced with trailing NULL.
- *
- * If argc is used, it has to be decremented separately.
- *
- * @argv is a pointer to first argv element.
- */
-static void shift_argv(char* argv[])
-{
-	char** i;
-
-	for (i = argv; *i; ++i)
-		i[0] = i[1];
-}
-
-/**
  * Check the buffer size and reallocate it if necessary.
  *
  * Assumes that buffers <= BUFSIZ are stack-allocated,
@@ -236,7 +220,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	shift_argv(argv);
+	++argv;
 
 	while (1)
 	{
