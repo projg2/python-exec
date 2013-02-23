@@ -9,7 +9,7 @@ check_SCRIPTS = tests/python-exec
 python_exec_c_SOURCES = src/python-exec-c.c
 
 EXTRA_DIST = src/python-exec.in
-CLEANFILES = python-exec tests/python-exec
+CLEANFILES = python-exec tests/python-exec tests/*.tmp*
 python-exec: src/python-exec.in
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|${bindir}|" $< > $@.tmp
