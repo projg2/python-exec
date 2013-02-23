@@ -27,7 +27,9 @@ LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
 
 TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/symlink-test tests/abs-symlink-test tests/symlink-pref-test \
-	tests/deep-symlink-test tests/pythonwrap-test
+	tests/deep-symlink-test tests/pythonwrap-test \
+	tests/pythonwrap-symlink-test tests/pythonwrap-abs-symlink-test \
+	tests/pythonwrap-deep-symlink-test
 
 EXTRA_DIST += NEWS
 NEWS: configure.ac Makefile.am
