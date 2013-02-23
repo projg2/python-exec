@@ -1,0 +1,40 @@
+#!/bin/sh
+
+echo "${TEST_NAME} -- test whether Python wrapper respects Python version used"
+
+set -- ${PYTHON_IMPLS}
+
+SEL_PY2=$(get_eselected --python2)
+SEL_PY3=$(get_eselected --python3)
+
+while true; do
+	if [ ${#} -lt 2 ]; then
+		# we can't test a preference without at least two impls ;)
+		echo 'Not enough installed interpreters to perform test.' >&2
+		do_exit 77
+	fi
+
+	# EPYTHON can't be one of eselected pythons, otherwise the result
+	# would be inconclusive.
+	if [ "${1}" = "${SEL_PY2}" -o "${1}" = "${SEL_PY3}" ]; then
+		shift
+	# And we have to have the proper Python version installed.
+	elif ! "${1}" --version >&2; then
+		shift
+	else
+		break
+	fi
+done
+
+MY_PYTHON=${1}
+BETTER=${2}
+
+echo "Python used: ${MY_PYTHON}" >&2
+echo "other impl: ${BETTER}" >&2
+
+unset EPYTHON
+
+write_impl "${MY_PYTHON}" "import sys; sys.exit(0)"
+write_impl "${BETTER}"  "import sys; sys.exit('Python version not respected')"
+
+do_test "${MY_PYTHON}" "${TEST_TMP}"
