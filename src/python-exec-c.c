@@ -11,11 +11,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <errno.h>
 
-#include <limits.h>
-#include <sys/stat.h>
+#ifdef HAVE_READLINK
+#	include <unistd.h>
+#	include <limits.h>
+#	include <sys/stat.h>
+#endif
 
 /* All possible EPYTHON values, provided to the configure script. */
 const char* const python_impls[] = { PYTHON_IMPLS };
@@ -90,6 +92,8 @@ static int try_file(char* bufp, const char* path, size_t max_len)
 	return !!f;
 }
 
+#ifdef HAVE_READLINK
+
 /**
  * Try to read a symlink target.
  *
@@ -120,6 +124,8 @@ static int try_symlink(char* bufp, const char* path, size_t max_len)
 
 	return 0;
 }
+
+#endif
 
 /**
  * Shift the argv array one element left. Left-most element will be
@@ -173,6 +179,8 @@ static int expand_buffer(char** buf, size_t* buf_size, size_t req_size)
 	return 1;
 }
 
+#ifdef HAVE_READLINK
+
 /**
  * Obtain symlink length. Assumes that symlinks don't change during
  * the process.
@@ -200,6 +208,8 @@ size_t get_symlink_length(const char* path)
 
 	return 0;
 }
+
+#endif
 
 /**
  * Usage: python-exec <script> [<argv>...]
@@ -235,6 +245,7 @@ int main(int argc, char* argv[])
 
 		if (!symlink_resolution)
 			len = strlen(script);
+#ifdef HAVE_READLINK
 		else
 		{
 			size_t sym_len = get_symlink_length(bufp);
@@ -258,6 +269,7 @@ int main(int argc, char* argv[])
 
 			len += sym_len;
 		}
+#endif
 
 		/* 2 is for the hyphen and the null terminator. */
 		if (!expand_buffer(&bufp, &buf_size, len + max_epython_len + 2))
@@ -269,6 +281,7 @@ int main(int argc, char* argv[])
 
 		if (!symlink_resolution)
 			memcpy(bufp, script, len);
+#ifdef HAVE_READLINK
 		else
 		{
 			/**
@@ -292,6 +305,7 @@ int main(int argc, char* argv[])
 			if (*fnpos == path_sep && fnpos != bufp)
 				memmove(bufp, fnpos, strlen(fnpos) + 1);
 		}
+#endif
 
 		bufpy = &bufp[len+1];
 		bufpy[-1] = '-';
@@ -312,10 +326,12 @@ int main(int argc, char* argv[])
 			execvp(bufp, argv);
 		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config", max_epython_len))
 			execvp(bufp, argv);
+#ifdef HAVE_READLINK
 		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2", max_epython_len))
 			execvp(bufp, argv);
 		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3", max_epython_len))
 			execvp(bufp, argv);
+#endif
 
 		for (i = python_impls; *i; ++i)
 		{
@@ -327,7 +343,12 @@ int main(int argc, char* argv[])
 		 * Strip the hyphen back and try symlink resolution.
 		 */
 		bufpy[-1] = 0;
+
+#ifdef HAVE_READLINK
 		symlink_resolution = 1;
+#else
+		break;
+#endif
 	}
 
 	/* If no execvp() succeeded, that means we either don't have
