@@ -25,6 +25,7 @@ done
 
 AC_DEFINE_UNQUOTED([PYTHON_IMPLS], [$python_impls],
 	[Set to the list of supported Python implementations])
+AC_SUBST([PYTHON_IMPLS], [$with_python_impls])
 AC_DEFINE_UNQUOTED([MAX_EPYTHON_LEN], [$max_len],
 	[Set to the maximum length of EPYTHON (implementation name)])
 
@@ -37,13 +38,14 @@ AS_CASE(["$with_eprefix"],
 AC_DEFINE_UNQUOTED([EPREFIX], ["$with_eprefix"],
 	[Set to the Gentoo Prefix EPREFIX (if building for Prefix)])
 
-AM_INIT_AUTOMAKE([1.6 foreign dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 subdir-objects parallel-tests])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
 
+AC_PROG_MKDIR_P
 AC_PROG_SED
 
 AC_CONFIG_HEADER([config.h])

@@ -4,15 +4,28 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 bin_PROGRAMS = python-exec-c
 bin_SCRIPTS = python-exec
 
+check_SCRIPTS = tests/python-exec
+
 python_exec_c_SOURCES = src/python-exec-c.c
 
 EXTRA_DIST = src/python-exec.in
-CLEANFILES = python-exec
+CLEANFILES = python-exec tests/python-exec
 python-exec: src/python-exec.in
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|${bindir}|" ${srcdir}/src/$@.in > $@.tmp
+	@SED@ -e "s|[@]bindir@|${bindir}|" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
+
+tests/python-exec: src/python-exec.in
+	$(MKDIR_P) tests
+	rm -f $@ $@.tmp
+	@SED@ -e "s|[@]bindir@|.|" $< > $@.tmp
+	chmod a-w,a+x $@.tmp
+	mv $@.tmp $@
+
+LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
+
+TESTS = tests/epython-test
 
 EXTRA_DIST += NEWS
 NEWS: configure.ac Makefile.am
