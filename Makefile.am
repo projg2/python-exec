@@ -30,6 +30,7 @@ TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/deep-symlink-test tests/pythonwrap-test \
 	tests/pythonwrap-symlink-test tests/pythonwrap-abs-symlink-test \
 	tests/pythonwrap-deep-symlink-test
+EXTRA_DIST += tests/runner.sh $(TESTS)
 
 EXTRA_DIST += NEWS
 NEWS: configure.ac Makefile.am
