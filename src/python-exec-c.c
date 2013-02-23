@@ -207,7 +207,7 @@ size_t get_symlink_length(const char* path)
  */
 void execute(char* script, char** argv)
 {
-	execvp(script, argv);
+	execv(script, argv);
 }
 
 /**
