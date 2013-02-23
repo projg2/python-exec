@@ -35,6 +35,19 @@ do_test() {
 	do_exit ${ret}
 }
 
+get_eselected() {
+	set +e
+
+	set -- eselect python show "${@}"
+	ret=$("${@}")
+	echo "${ret}"
+
+	[ -n "${ret}" ] || ret='(none)'
+	echo "${*} -> ${ret}" >&2
+
+	set -e
+}
+
 # catch all failures
 trap 'exit 99' EXIT
 set -e
