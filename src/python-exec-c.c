@@ -230,30 +230,33 @@ int main(int argc, char* argv[])
 
 	while (1)
 	{
-		size_t len = strlen(script);
+		size_t len;
 		char* fnpos;
 
-		if (symlink_resolution)
+		if (!symlink_resolution)
+			len = strlen(script);
+		else
 		{
+			size_t sym_len = get_symlink_length(bufp);
+
+			if (!sym_len)
+			{
+				if (errno != 0)
+					fprintf(stderr, "%s: unable to stat symlink at %s: %s\n",
+							script, bufp, strerror(errno));
+				else /* no more symlinks to try */
+					fprintf(stderr, "%s: no supported Python implementation variant found!\n",
+							script);
+				break;
+			}
+
 			fnpos = strrchr(bufp, path_sep);
 			if (fnpos)
-				len -= strlen(&fnpos[1]);
+				len = &fnpos[1] - bufp;
 			else
 				len = 0;
 
-			/* XXX: subtract filename length, we will strip it anyway */
-			len += get_symlink_length(script);
-		}
-
-		if (!len)
-		{
-			if (errno != 0)
-				fprintf(stderr, "%s: unable to stat symlink at %s: %s\n",
-						script, bufp, strerror(errno));
-			else /* no more symlinks to try */
-				fprintf(stderr, "%s: no supported Python implementation variant found!\n",
-						script);
-			break;
+			len += sym_len;
 		}
 
 		/* 2 is for the hyphen and the null terminator. */
