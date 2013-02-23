@@ -196,6 +196,21 @@ size_t get_symlink_length(const char* path)
 #endif
 
 /**
+ * Run the specified script using execvp().
+ *
+ * @script specifies path to the script to execute.
+ *
+ * @argv specifies intended script argv. The passed array needs to start
+ * one element earlier, so that argv[-1] assignment is valid.
+ *
+ * Does not return if execution succeeds. Returns otherwise.
+ */
+void execute(char* script, char** argv)
+{
+	execvp(script, argv);
+}
+
+/**
  * Usage: python-exec <script> [<argv>...]
  *
  * python-exec tries to execute <script> with most preferred Python
@@ -307,20 +322,20 @@ int main(int argc, char* argv[])
 		 * 4) uses the eclass-defined order.
 		 */
 		if (try_env(bufpy, "EPYTHON", max_epython_len))
-			execvp(bufp, argv);
+			execute(bufp, argv);
 		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config", max_epython_len))
-			execvp(bufp, argv);
+			execute(bufp, argv);
 #ifdef HAVE_READLINK
 		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2", max_epython_len))
-			execvp(bufp, argv);
+			execute(bufp, argv);
 		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3", max_epython_len))
-			execvp(bufp, argv);
+			execute(bufp, argv);
 #endif
 
 		for (i = python_impls; *i; ++i)
 		{
 			strcpy(bufpy, *i);
-			execvp(bufp, argv);
+			execute(bufp, argv);
 		}
 
 		/**
