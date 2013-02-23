@@ -28,6 +28,7 @@ do_exit() {
 
 do_test() {
 	set +e
+	echo "Test command: ${@}" >&2
 
 	"${@}"
 	ret=${?}
