@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 	const char* script = argv[1];
 	int symlink_resolution = 0;
 
-	if (!script && !script[0])
+	if (!script || !script[0])
 	{
 		fprintf(stderr, "Usage: %s <script>\n", argv[0]);
 		return EXIT_FAILURE;
