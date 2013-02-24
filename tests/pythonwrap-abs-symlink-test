@@ -6,7 +6,7 @@ set -- ${PYTHON_IMPLS}
 
 while true; do
 	if [ ${#} -lt 1 ]; then
-		echo 'No working Python intepreter found (?!)' >&2
+		echo 'No working Python interpreter found (?!)' >&2
 		do_exit 77
 	fi
 

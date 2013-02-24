@@ -26,7 +26,7 @@ tests/python-exec: src/python-exec.in
 LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
 
 TESTS = tests/epython-test tests/eselect-test tests/order-test \
-	tests/pythonwrap-test
+	tests/pythonwrap-test tests/pythonwrap-__file__-test
 
 if HAVE_READLINK
 TESTS += \
