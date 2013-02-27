@@ -16,10 +16,10 @@ python-exec: src/python-exec.in
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec: src/python-exec.in
+tests/python-exec: python-exec
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|.|" $< > $@.tmp
+	@SED@ -e "s|${bindir}|.|" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
