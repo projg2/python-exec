@@ -12,7 +12,8 @@ EXTRA_DIST = src/python-exec.in
 CLEANFILES = python-exec tests/python-exec tests/*.tmp*
 python-exec: src/python-exec.in
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|${bindir}|" $< > $@.tmp
+	@SED@ -e "s|[@]bindir@|${bindir}|" \
+		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
