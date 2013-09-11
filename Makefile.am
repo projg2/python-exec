@@ -4,10 +4,11 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 bin_PROGRAMS = python-exec-c
 bin_SCRIPTS = python-exec
 
-check_PROGRAMS = src/print-bufsiz
+check_PROGRAMS = tests/print-bufsiz
 check_SCRIPTS = tests/python-exec
 
 python_exec_c_SOURCES = src/python-exec-c.c
+tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
 EXTRA_DIST = src/python-exec.in
 CLEANFILES = python-exec tests/python-exec tests/*.tmp*
