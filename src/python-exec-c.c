@@ -49,14 +49,9 @@ const char path_sep = '/';
  static void set_scriptbuf(char* bufp, const char* impl,
 		const char* progname)
 {
-	memcpy(bufp, python_scriptroot, sizeof(python_scriptroot));
-	if (impl)
-	{
-		bufp += sizeof(python_scriptroot) - 1;
-		strcpy(bufp, impl);
-		strcat(bufp, "/");
-		strcat(bufp, progname);
-	}
+	strcpy(bufp, impl);
+	strcat(bufp, "/");
+	strcat(bufp, progname);
 }
 
 /**
@@ -116,9 +111,6 @@ static int try_file(char* bufp, const char* progname,
 	{
 		size_t rd;
 
-		set_scriptbuf(bufp, 0, 0);
-		bufp += sizeof(python_scriptroot) - 1;
-
 		/* +1 for '\n', +2 to enforce EOF */
 		rd = fread(bufp, 1, max_len+2, f);
 		if (rd > 0 && feof(f))
@@ -160,12 +152,6 @@ static int try_symlink(char* bufp, const char* progname,
 		const char* path, size_t max_len)
 {
 	size_t rd;
-
-	if (progname)
-	{
-		set_scriptbuf(bufp, 0, 0);
-		bufp += sizeof(python_scriptroot) - 1;
-	}
 
 	errno = 0;
 	/* 1 for the null terminator with max length */
@@ -263,6 +249,7 @@ int main(int argc, char* argv[])
 	const char* const* i;
 	char buf[BUFFER_SIZE];
 	char scriptbuf[BUFFER_SIZE];
+	char* bufpy;
 
 	const char* script = argv[1];
 	int symlink_resolution = 0;
@@ -274,6 +261,10 @@ int main(int argc, char* argv[])
 	}
 
 	++argv;
+
+	/* put the always-common part in */
+	memcpy(scriptbuf, python_scriptroot, sizeof(python_scriptroot));
+	bufpy = &scriptbuf[sizeof(python_scriptroot) - 1];
 
 	while (1)
 	{
@@ -372,20 +363,20 @@ int main(int argc, char* argv[])
 		 *
 		 * 4) uses the eclass-defined order.
 		 */
-		if (try_env(scriptbuf, fnpos, "EPYTHON", max_epython_len))
+		if (try_env(bufpy, fnpos, "EPYTHON", max_epython_len))
 			execute(scriptbuf, argv);
-		if (try_file(scriptbuf, fnpos, EPREFIX "/etc/env.d/python/config", max_epython_len))
+		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/config", max_epython_len))
 			execute(scriptbuf, argv);
 #ifdef HAVE_READLINK
-		if (try_symlink(scriptbuf, fnpos, EPREFIX "/usr/bin/python2", max_epython_len))
+		if (try_symlink(bufpy, fnpos, EPREFIX "/usr/bin/python2", max_epython_len))
 			execute(scriptbuf, argv);
-		if (try_symlink(scriptbuf, fnpos, EPREFIX "/usr/bin/python3", max_epython_len))
+		if (try_symlink(bufpy, fnpos, EPREFIX "/usr/bin/python3", max_epython_len))
 			execute(scriptbuf, argv);
 #endif
 
 		for (i = python_impls; *i; ++i)
 		{
-			set_scriptbuf(scriptbuf, *i, fnpos);
+			set_scriptbuf(bufpy, *i, fnpos);
 			execute(scriptbuf, argv);
 		}
 
