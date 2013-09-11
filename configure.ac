@@ -38,6 +38,18 @@ AS_CASE(["$with_eprefix"],
 AC_DEFINE_UNQUOTED([EPREFIX], ["$with_eprefix"],
 	[Set to the Gentoo Prefix EPREFIX (if building for Prefix)])
 
+AC_ARG_WITH([buffer-size],
+	[AS_HELP_STRING([--with-buffer-size=SIZE],
+		[Initial static buffer size (default: BUFSIZ)])])
+AS_CASE(["$with_buffer_size"],
+	[yes], [AC_MSG_ERROR([--with-buffer-size takes a numeric value])],
+	[no], [AC_MSG_ERROR([--without-buffer-size is meaningless])])
+if test -n "$with_buffer_size"
+then
+	AC_DEFINE_UNQUOTED([BUFFER_SIZE], [$with_buffer_size],
+		[Set to static buffer size for path])
+fi
+
 AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 subdir-objects parallel-tests])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])

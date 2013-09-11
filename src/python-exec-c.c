@@ -19,6 +19,10 @@
 #	include <sys/stat.h>
 #endif
 
+#ifndef BUFFER_SIZE
+#	define BUFFER_SIZE BUFSIZ
+#endif
+
 /* All possible EPYTHON values, provided to the configure script. */
 const char* const python_impls[] = { PYTHON_IMPLS };
 /* Maximum length of an EPYTHON value. */
@@ -130,7 +134,7 @@ static int try_symlink(char* bufp, const char* path, size_t max_len)
 /**
  * Check the buffer size and reallocate it if necessary.
  *
- * Assumes that buffers <= BUFSIZ are stack-allocated,
+ * Assumes that buffers <= BUFFER_SIZE are stack-allocated,
  * and heap-allocated above that size.
  *
  * @buf is the pointer to the buffer address holder.
@@ -149,7 +153,7 @@ static int expand_buffer(char** buf, size_t* buf_size, size_t req_size)
 		char *new_buf;
 
 		/* first alloc */
-		if (*buf_size <= BUFSIZ)
+		if (*buf_size <= BUFFER_SIZE)
 			new_buf = malloc(req_size);
 		else /* realloc */
 			new_buf = realloc(*buf, req_size);
@@ -235,7 +239,7 @@ void execute(char* script, char** argv)
 int main(int argc, char* argv[])
 {
 	const char* const* i;
-	char buf[BUFSIZ];
+	char buf[BUFFER_SIZE];
 	size_t buf_size = sizeof(buf);
 	char* bufp = buf;
 	char* bufpy;

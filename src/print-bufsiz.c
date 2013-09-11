@@ -10,9 +10,13 @@
 
 #include <stdio.h>
 
+#ifndef BUFFER_SIZE
+#	define BUFFER_SIZE BUFSIZ
+#endif
+
 int main()
 {
-	long unsigned buf_size = BUFSIZ;
+	long unsigned buf_size = BUFFER_SIZE;
 	printf("%lu\n", buf_size);
 	return 0;
 }
