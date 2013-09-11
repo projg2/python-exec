@@ -131,42 +131,6 @@ static int try_symlink(char* bufp, const char* path, size_t max_len)
 
 #endif
 
-/**
- * Check the buffer size and reallocate it if necessary.
- *
- * Assumes that buffers <= BUFFER_SIZE are stack-allocated,
- * and heap-allocated above that size.
- *
- * @buf is the pointer to the buffer address holder.
- *
- * @buf_size is the pointer to the buffer size holder.
- *
- * @req_size is the requested buffer size.
- *
- * Returns 1 on success, or 0 if memory allocation failed.
- * In the latter case, buffer is left unchanged.
- */
-static int expand_buffer(char** buf, size_t* buf_size, size_t req_size)
-{
-	if (req_size >= *buf_size)
-	{
-		char *new_buf;
-
-		/* first alloc */
-		if (*buf_size <= BUFFER_SIZE)
-			new_buf = malloc(req_size);
-		else /* realloc */
-			new_buf = realloc(*buf, req_size);
-
-		if (!new_buf)
-			return 0;
-		*buf = new_buf;
-		*buf_size = req_size;
-	}
-
-	return 1;
-}
-
 #ifdef HAVE_READLINK
 
 /**
@@ -241,7 +205,6 @@ int main(int argc, char* argv[])
 	const char* const* i;
 	char buf[BUFFER_SIZE];
 	size_t buf_size = sizeof(buf);
-	char* bufp = buf;
 	char* bufpy;
 
 	const char* script = argv[1];
@@ -265,22 +228,22 @@ int main(int argc, char* argv[])
 #ifdef HAVE_READLINK
 		else
 		{
-			size_t sym_len = get_symlink_length(bufp);
+			size_t sym_len = get_symlink_length(buf);
 
 			if (!sym_len)
 			{
 				if (errno != 0)
 					fprintf(stderr, "%s: unable to stat symlink at %s: %s\n",
-							script, bufp, strerror(errno));
+							script, buf, strerror(errno));
 				else /* no more symlinks to try */
 					fprintf(stderr, "%s: no supported Python implementation variant found!\n",
 							script);
 				break;
 			}
 
-			fnpos = strrchr(bufp, path_sep);
+			fnpos = strrchr(buf, path_sep);
 			if (fnpos)
-				len = &fnpos[1] - bufp;
+				len = &fnpos[1] - buf;
 			else
 				len = 0;
 
@@ -289,15 +252,15 @@ int main(int argc, char* argv[])
 #endif
 
 		/* 2 is for the hyphen and the null terminator. */
-		if (!expand_buffer(&bufp, &buf_size, len + max_epython_len + 2))
+		if (len + max_epython_len + 2 > BUFFER_SIZE)
 		{
-			fprintf(stderr, "%s: memory allocation failed (program name too long).\n",
+			fprintf(stderr, "%s: program name longer than buffer size.\n",
 					script);
-			break;
+			return 127;
 		}
 
 		if (!symlink_resolution)
-			memcpy(bufp, script, len);
+			memcpy(buf, script, len);
 #ifdef HAVE_READLINK
 		else
 		{
@@ -306,25 +269,25 @@ int main(int argc, char* argv[])
 			 * the current directory (but strip filename).
 			 */
 			if (!fnpos)
-				fnpos = bufp;
+				fnpos = buf;
 			else
 				++fnpos;
 
-			if (!try_symlink(fnpos, bufp, len))
+			if (!try_symlink(fnpos, buf, len))
 			{
 				fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
-						script, bufp,
+						script, buf,
 						errno != 0 ? strerror(errno) : "target length changed");
 				break;
 			}
 
 			/* Symlink is absolute, move the path. */
-			if (*fnpos == path_sep && fnpos != bufp)
-				memmove(bufp, fnpos, strlen(fnpos) + 1);
+			if (*fnpos == path_sep && fnpos != buf)
+				memmove(buf, fnpos, strlen(fnpos) + 1);
 		}
 #endif
 
-		bufpy = &bufp[len+1];
+		bufpy = &buf[len+1];
 		bufpy[-1] = '-';
 
 		/**
@@ -340,20 +303,20 @@ int main(int argc, char* argv[])
 		 * 4) uses the eclass-defined order.
 		 */
 		if (try_env(bufpy, "EPYTHON", max_epython_len))
-			execute(bufp, argv);
+			execute(buf, argv);
 		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config", max_epython_len))
-			execute(bufp, argv);
+			execute(buf, argv);
 #ifdef HAVE_READLINK
 		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2", max_epython_len))
-			execute(bufp, argv);
+			execute(buf, argv);
 		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3", max_epython_len))
-			execute(bufp, argv);
+			execute(buf, argv);
 #endif
 
 		for (i = python_impls; *i; ++i)
 		{
 			strcpy(bufpy, *i);
-			execute(bufp, argv);
+			execute(buf, argv);
 		}
 
 		/**
@@ -372,7 +335,5 @@ int main(int argc, char* argv[])
 	 * a single supported implementation here or something is seriously
 	 * broken.
 	 */
-	if (bufp != buf)
-		free(bufp);
 	return 127;
 }
