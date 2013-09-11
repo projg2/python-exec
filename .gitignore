@@ -9,6 +9,15 @@ Makefile.in
 /build-aux/
 /config.*
 /configure
+/NEWS
 /stamp-h1
 
-/python-exec*
+/python-exec
+/python-exec-c
+
+/test-suite.log
+/tests/print-bufsiz
+/tests/python-exec
+/tests/*.log
+/tests/*.tmp*
+/tests/*.trs
