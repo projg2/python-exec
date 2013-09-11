@@ -1,25 +1,25 @@
 AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-python-impls='python3.1 python3.2 python2.6 python2.7'
 
-bin_PROGRAMS = python-exec-c
-bin_SCRIPTS = python-exec
+bin_PROGRAMS = python-exec2-c
+bin_SCRIPTS = python-exec2
 
 check_PROGRAMS = tests/print-bufsiz
 check_SCRIPTS = tests/python-exec
 
-python_exec_c_SOURCES = src/python-exec-c.c
+python_exec2_c_SOURCES = src/python-exec-c.c
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
 EXTRA_DIST = src/python-exec.in
-CLEANFILES = python-exec tests/python-exec tests/*.tmp*
-python-exec: src/python-exec.in
+CLEANFILES = python-exec2 tests/python-exec tests/*.tmp*
+python-exec2: src/python-exec.in
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|${bindir}|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec: python-exec
+tests/python-exec: python-exec2
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
 	@SED@ -e "s|${bindir}|.|" $< > $@.tmp
