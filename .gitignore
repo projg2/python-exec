@@ -12,12 +12,15 @@ Makefile.in
 /NEWS
 /stamp-h1
 
-/python-exec
-/python-exec-c
+/python-exec2
+/python-exec2-c
 
 /test-suite.log
 /tests/print-bufsiz
 /tests/python-exec
+/tests/python-exec2-c
+/tests/python-exec-c.c
 /tests/*.log
 /tests/*.tmp*
 /tests/*.trs
+/tests/python*/
