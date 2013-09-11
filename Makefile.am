@@ -4,6 +4,7 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 bin_PROGRAMS = python-exec-c
 bin_SCRIPTS = python-exec
 
+check_PROGRAMS = src/print-bufsiz
 check_SCRIPTS = tests/python-exec
 
 python_exec_c_SOURCES = src/python-exec-c.c
@@ -27,13 +28,15 @@ tests/python-exec: python-exec
 LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
 
 TESTS = tests/epython-test tests/eselect-test tests/order-test \
-	tests/pythonwrap-test tests/pythonwrap-__file__-test
+	tests/pythonwrap-test tests/pythonwrap-__file__-test \
+	tests/long-path-test
 
 if HAVE_READLINK
 TESTS += \
 	tests/symlink-test tests/abs-symlink-test tests/symlink-pref-test \
 	tests/deep-symlink-test tests/pythonwrap-symlink-test \
-	tests/pythonwrap-abs-symlink-test tests/pythonwrap-deep-symlink-test
+	tests/pythonwrap-abs-symlink-test tests/pythonwrap-deep-symlink-test \
+	tests/long-symlink-test tests/deep-long-symlink-test
 endif
 
 EXTRA_DIST += tests/runner.sh $(TESTS)

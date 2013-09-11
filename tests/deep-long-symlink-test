@@ -1,0 +1,35 @@
+#!/bin/sh
+
+echo "${TEST_NAME} -- test whether deep, long (>BUFSIZ) symlinks work"
+
+bufsiz=$(src/print-bufsiz)
+
+if [ -z "${bufsiz}" ]; then
+	echo 'BUFSIZ unknown' >&2
+	do_exit 77
+fi
+
+# bufsiz + temporary prefix > bufsiz :)
+longfn=$(printf "%0${bufsiz}d" 3)
+# twice bufsiz + ...
+verylongfn=$(printf "%0${bufsiz}d" 0)${longfn}
+
+set -- ${PYTHON_IMPLS}
+
+if [ ${#} -lt 1 ]; then
+	echo 'No Python implementation supported (?!)' >&2
+	do_exit 77
+fi
+
+export EPYTHON=${1}
+
+echo "EPYTHON: ${EPYTHON}" >&2
+
+if ! write_impl "${verylongfn}-${EPYTHON}" "#!/usr/bin/env true"; then
+	do_exit 77
+fi
+mv "${TEST_TMP}" "${TEST_TMP}-${verylongfn}"
+ln -s "${TEST_TMP##*/}-${verylongfn}" "${TEST_TMP}-${longfn}"
+ln -s "${TEST_TMP##*/}-${longfn}" "${TEST_TMP}"
+
+do_test "${TEST_TMP}"

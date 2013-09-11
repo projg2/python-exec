@@ -17,7 +17,7 @@ TEST_TMP=tests/${TEST_NAME}.tmp
 
 # helper functions
 write_impl() {
-	echo "${2}" > "${TEST_TMP}-${1}"
+	echo "${2}" > "${TEST_TMP}-${1}" && \
 	chmod -w,+x "${TEST_TMP}-${1}"
 }
 
