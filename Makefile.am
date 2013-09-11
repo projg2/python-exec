@@ -4,14 +4,21 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 bin_PROGRAMS = python-exec2-c
 bin_SCRIPTS = python-exec2
 
-check_PROGRAMS = tests/print-bufsiz
+check_PROGRAMS = tests/print-bufsiz tests/python-exec2-c
 check_SCRIPTS = tests/python-exec
 
 python_exec2_c_SOURCES = src/python-exec-c.c
+
+tests_python_exec2_c_SOURCES = tests/python-exec-c.c
+
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
+BUILT_SOURCES = tests/python-exec-c.c
 EXTRA_DIST = src/python-exec.in
-CLEANFILES = python-exec2 tests/python-exec tests/*.tmp*
+CLEANFILES = python-exec2 \
+	tests/python-exec tests/python-exec2-c \
+	tests/python-exec.c tests/*.tmp*
+
 python-exec2: src/python-exec.in
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|${bindir}|" \
@@ -19,10 +26,15 @@ python-exec2: src/python-exec.in
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec: python-exec2
+tests/python-exec-c.c: src/python-exec-c.c
+	$(MKDIR_P) tests
+	cp $< $@
+
+tests/python-exec: src/python-exec.in
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
-	@SED@ -e "s|${bindir}|.|" $< > $@.tmp
+	@SED@ -e "s|[@]bindir@|.|" \
+		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
