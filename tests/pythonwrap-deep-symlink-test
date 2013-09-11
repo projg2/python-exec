@@ -23,8 +23,8 @@ MY_PYTHON=${1}
 echo "Python used: ${MY_PYTHON}" >&2
 
 write_impl "${MY_PYTHON}" "import sys; sys.exit(0)"
-ln -s "${TEST_TMP##*/}" "${TEST_TMP}-symI"
-ln -s "${TEST_TMP##*/}-symI" "${TEST_TMP}-symII"
-ln -s "${TEST_TMP##*/}-symII" "${TEST_TMP}-symIII"
+do_sym "${TEST_TMP}" "${TEST_TMP}-symI"
+do_sym "${TEST_TMP}-symI" "${TEST_TMP}-symII"
+do_sym "${TEST_TMP}-symII" "${TEST_TMP}-symIII"
 
 do_test "${MY_PYTHON}" "${TEST_TMP}-symIII"

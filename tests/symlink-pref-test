@@ -15,8 +15,8 @@ export EPYTHON=${2}
 echo "first: ${FIRST}" >&2
 echo "EPYTHON: ${EPYTHON}" >&2
 
-write_impl "sym-${FIRST}" "#!/usr/bin/env true"
+write_impl "${FIRST}" "#!/usr/bin/env true" "-sym"
 write_impl "${EPYTHON}" "#!/usr/bin/env false"
-ln -s "${TEST_TMP##*/}" "${TEST_TMP}-sym"
+do_sym "${TEST_TMP}" "${TEST_TMP}-sym"
 
 do_test "${TEST_TMP}-sym"

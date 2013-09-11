@@ -23,7 +23,8 @@ except ImportError:
 # __file__ keeps the 'full' name
 
 while True:
-	__file__ = sys.argv[0] + '-' + EPYTHON
+	__file__ = os.path.join('@PYTHON_SCRIPTROOT@', EPYTHON,
+			os.path.basename(sys.argv[0]))
 
 	try:
 		kwargs = {}

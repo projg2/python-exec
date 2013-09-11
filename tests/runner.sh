@@ -12,13 +12,19 @@ ERROR=99
 # common metadata
 PYTHON_IMPLS=${1}
 TEST=${2}
+TEST_DIR=tests
 TEST_NAME=${2##*/}
-TEST_TMP=tests/${TEST_NAME}.tmp
+TEST_TMP=${TEST_NAME}.tmp
 
 # helper functions
 write_impl() {
-	echo "${2}" > "${TEST_TMP}-${1}" && \
-	chmod -w,+x "${TEST_TMP}-${1}"
+	mkdir -p "${TEST_DIR}/${1}" && \
+	echo "${2}" > "${TEST_DIR}/${1}/${TEST_TMP}${3}" && \
+	chmod -w,+x "${TEST_DIR}/${1}/${TEST_TMP}${3}"
+}
+
+do_sym() {
+	ln -s "${1}" "${TEST_DIR}/${2}"
 }
 
 do_exit() {
@@ -27,6 +33,12 @@ do_exit() {
 }
 
 do_test() {
+	if [ ${#} -eq 2 ]; then
+		set -- "${1}" "${TEST_DIR}/${2}"
+	else
+		set -- "${TEST_DIR}/${1}"
+	fi
+
 	set +e
 	echo "Test command: ${@}" >&2
 
@@ -53,6 +65,6 @@ get_eselected() {
 trap 'exit 99' EXIT
 set -e
 
-rm -f "${TEST_TMP}"*
-ln -s python-exec "${TEST_TMP}"
+rm -f "${TEST_DIR}/${TEST_TMP}"* "${TEST_DIR}"/*/"${TEST_TMP}"*
+ln -s python-exec "${TEST_DIR}/${TEST_TMP}"
 . "${TEST}"

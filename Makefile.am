@@ -10,6 +10,7 @@ check_SCRIPTS = tests/python-exec
 python_exec2_c_SOURCES = src/python-exec-c.c
 
 tests_python_exec2_c_SOURCES = tests/python-exec-c.c
+tests_python_exec2_c_CPPFLAGS = -DTEST_SCRIPTROOT=\"tests\"
 
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
@@ -17,11 +18,12 @@ BUILT_SOURCES = tests/python-exec-c.c
 EXTRA_DIST = src/python-exec.in
 CLEANFILES = python-exec2 \
 	tests/python-exec tests/python-exec2-c \
-	tests/python-exec.c tests/*.tmp*
+	tests/python-exec-c.c tests/*.tmp* tests/*/*.tmp*
 
 python-exec2: src/python-exec.in
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|${bindir}|" \
+		-e "s|[@]PYTHON_SCRIPTROOT@|${PYTHON_SCRIPTROOT}|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
@@ -33,7 +35,8 @@ tests/python-exec-c.c: src/python-exec-c.c
 tests/python-exec: src/python-exec.in
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|.|" \
+	@SED@ -e "s|[@]bindir@|./tests|" \
+		-e "s|[@]PYTHON_SCRIPTROOT@|tests|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@

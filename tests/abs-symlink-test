@@ -14,6 +14,6 @@ export EPYTHON=${1}
 echo "EPYTHON: ${EPYTHON}" >&2
 
 write_impl "${EPYTHON}" "#!/usr/bin/env true"
-ln -s "${PWD}/${TEST_TMP}" "${TEST_TMP}.symlink"
+do_sym "${PWD}/${TEST_DIR}/${TEST_TMP}" "${TEST_TMP}.symlink"
 
 do_test "${TEST_TMP}.symlink"

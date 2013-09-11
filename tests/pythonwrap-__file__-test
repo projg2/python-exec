@@ -25,8 +25,8 @@ echo "Python used: ${MY_PYTHON}" >&2
 write_impl "${MY_PYTHON}" "print(__file__)"
 
 # The value should be the same as if variant was run directly.
-V_EXP=$("${MY_PYTHON}" "${TEST_TMP}-${MY_PYTHON}")
-V_GOT=$("${MY_PYTHON}" "${TEST_TMP}")
+V_EXP=$("${MY_PYTHON}" "${TEST_DIR}/${MY_PYTHON}/${TEST_TMP}")
+V_GOT=$("${MY_PYTHON}" "${TEST_DIR}/${TEST_TMP}")
 
 echo "Expected: ${V_EXP}" >&2
 echo "Received: ${V_GOT}" >&2

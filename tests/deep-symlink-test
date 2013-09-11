@@ -14,8 +14,8 @@ export EPYTHON=${1}
 echo "EPYTHON: ${EPYTHON}" >&2
 
 write_impl "${EPYTHON}" "#!/usr/bin/env true"
-ln -s "${TEST_TMP##*/}" "${TEST_TMP}-symI"
-ln -s "${TEST_TMP##*/}-symI" "${TEST_TMP}-symII"
-ln -s "${TEST_TMP##*/}-symII" "${TEST_TMP}-symIII"
+do_sym "${TEST_TMP}" "${TEST_TMP}-symI"
+do_sym "${TEST_TMP}-symI" "${TEST_TMP}-symII"
+do_sym "${TEST_TMP}-symII" "${TEST_TMP}-symIII"
 
 do_test "${TEST_TMP}-symIII"

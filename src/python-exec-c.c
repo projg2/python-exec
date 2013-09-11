@@ -23,6 +23,13 @@
 #	define BUFFER_SIZE BUFSIZ
 #endif
 
+#ifdef TEST_SCRIPTROOT /* override for tests */
+#	undef PYTHON_SCRIPTROOT
+#	define PYTHON_SCRIPTROOT TEST_SCRIPTROOT
+#endif
+
+/* Python script root directory */
+const char python_scriptroot[] = PYTHON_SCRIPTROOT "/";
 /* All possible EPYTHON values, provided to the configure script. */
 const char* const python_impls[] = { PYTHON_IMPLS };
 /* Maximum length of an EPYTHON value. */
@@ -31,10 +38,33 @@ const size_t max_epython_len = MAX_EPYTHON_LEN;
 const char path_sep = '/';
 
 /**
+ * Set path in scriptbuf for given impl.
+ *
+ * @bufp points to the buffer.
+ *
+ * @impl holds the implementation name.
+ *
+ * @progname contains the program basename.
+ */
+ static void set_scriptbuf(char* bufp, const char* impl,
+		const char* progname)
+{
+	memcpy(bufp, python_scriptroot, sizeof(python_scriptroot));
+	if (impl)
+	{
+		bufp += sizeof(python_scriptroot) - 1;
+		strcpy(bufp, impl);
+		strcat(bufp, "/");
+		strcat(bufp, progname);
+	}
+}
+
+/**
  * Try to obtain the value of an environment variable.
  *
- * @bufp points to the space in the buffer where the value shall be
- * written (first byte after the hyphen).
+ * @bufp points to the buffer.
+ *
+ * @progname contains the program basename.
  *
  * @variable contains the environment variable name.
  *
@@ -43,7 +73,8 @@ const char path_sep = '/';
  *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_env(char* bufp, const char* variable, size_t max_len)
+static int try_env(char* bufp, const char* progname,
+		const char* variable, size_t max_len)
 {
 	const char* epython = getenv(variable);
 
@@ -51,7 +82,7 @@ static int try_env(char* bufp, const char* variable, size_t max_len)
 	{
 		if (strlen(epython) <= max_len)
 		{
-			strcpy(bufp, epython);
+			set_scriptbuf(bufp, epython, progname);
 			return 1;
 		}
 		else
@@ -65,35 +96,46 @@ static int try_env(char* bufp, const char* variable, size_t max_len)
 /**
  * Try to read contents of a regular file.
  *
- * @bufp points to the space in the buffer where the value shall be
- * written (first byte after the hyphen).
+ * @bufp points to the buffer.
  *
- * @variable contains the file path.
+ * @progname contains the program basename.
+ *
+ * @path contains the file path.
  *
  * @max_len specifies the maximum value length. The buffer must have
  * at least one byte more for the null terminator.
  *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_file(char* bufp, const char* path, size_t max_len)
+static int try_file(char* bufp, const char* progname,
+		const char* path, size_t max_len)
 {
 	FILE* f = fopen(path, "r");
 
 	if (f)
 	{
-		size_t rd = fread(bufp, 1, max_len, f);
+		size_t rd;
 
+		set_scriptbuf(bufp, 0, 0);
+		bufp += sizeof(python_scriptroot) - 1;
+
+		/* +1 for '\n', +2 to enforce EOF */
+		rd = fread(bufp, 1, max_len+2, f);
 		if (rd > 0 && feof(f))
 		{
-			bufp[rd] = 0;
-			if (bufp[rd-1] == '\n')
-				bufp[rd-1] = 0;
+			if (bufp[rd-2] == '\n')
+				--rd;
+			bufp[rd-1] = '/';
+			strcpy(&bufp[rd], progname);
+
+			fclose(f);
+			return 1;
 		}
 
 		fclose(f);
 	}
 
-	return !!f;
+	return 0;
 }
 
 #ifdef HAVE_READLINK
@@ -104,16 +146,26 @@ static int try_file(char* bufp, const char* path, size_t max_len)
  * @bufp points to the space in the buffer where the target shall be
  * written (first byte after the hyphen).
  *
- * @variable contains the symlink path.
+ * @progname contains the program basename. May be NULL to disable
+ * scriptbuf syntax enforcing.
+ *
+ * @path contains the symlink path.
  *
  * @max_len specifies the maximum value length. The buffer must have
  * at least one byte more for the null terminator.
  *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_symlink(char* bufp, const char* path, size_t max_len)
+static int try_symlink(char* bufp, const char* progname,
+		const char* path, size_t max_len)
 {
 	size_t rd;
+
+	if (progname)
+	{
+		set_scriptbuf(bufp, 0, 0);
+		bufp += sizeof(python_scriptroot) - 1;
+	}
 
 	errno = 0;
 	/* 1 for the null terminator with max length */
@@ -122,7 +174,13 @@ static int try_symlink(char* bufp, const char* path, size_t max_len)
 	/* [max_len] could mean that the name is too long */
 	if (rd > 0 && rd < max_len + 1)
 	{
-		bufp[rd] = 0;
+		if (progname)
+		{
+			bufp[rd] = '/';
+			strcpy(&bufp[rd+1], progname);
+		}
+		else
+			bufp[rd] = 0;
 		return 1;
 	}
 
@@ -204,8 +262,7 @@ int main(int argc, char* argv[])
 {
 	const char* const* i;
 	char buf[BUFFER_SIZE];
-	size_t buf_size = sizeof(buf);
-	char* bufpy;
+	char scriptbuf[BUFFER_SIZE];
 
 	const char* script = argv[1];
 	int symlink_resolution = 0;
@@ -251,8 +308,8 @@ int main(int argc, char* argv[])
 		}
 #endif
 
-		/* 2 is for the hyphen and the null terminator. */
-		if (len + max_epython_len + 2 > BUFFER_SIZE)
+		/* length + null terminator */
+		if (len + 1 > BUFFER_SIZE)
 		{
 			fprintf(stderr, "%s: program name longer than buffer size.\n",
 					script);
@@ -273,7 +330,7 @@ int main(int argc, char* argv[])
 			else
 				++fnpos;
 
-			if (!try_symlink(fnpos, buf, len))
+			if (!try_symlink(fnpos, 0, buf, len))
 			{
 				fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
 						script, buf,
@@ -287,8 +344,21 @@ int main(int argc, char* argv[])
 		}
 #endif
 
-		bufpy = &buf[len+1];
-		bufpy[-1] = '-';
+		fnpos = strrchr(buf, path_sep);
+		if (!fnpos)
+			fnpos = buf;
+		else
+			++fnpos;
+
+		/* scriptroot + '/' + EPYTHON + '/' + basename + '\0' */
+		/* (but sizeof() gives [scriptroot + '/' + '\0']) */
+		len = sizeof(python_scriptroot) + max_epython_len + strlen(fnpos) + 1;
+		if (len >= BUFFER_SIZE)
+		{
+			fprintf(stderr, "%s: program name longer than buffer size.\n",
+					fnpos);
+			return 127;
+		}
 
 		/**
 		 * The implementation check order:
@@ -302,27 +372,22 @@ int main(int argc, char* argv[])
 		 *
 		 * 4) uses the eclass-defined order.
 		 */
-		if (try_env(bufpy, "EPYTHON", max_epython_len))
-			execute(buf, argv);
-		if (try_file(bufpy, EPREFIX "/etc/env.d/python/config", max_epython_len))
-			execute(buf, argv);
+		if (try_env(scriptbuf, fnpos, "EPYTHON", max_epython_len))
+			execute(scriptbuf, argv);
+		if (try_file(scriptbuf, fnpos, EPREFIX "/etc/env.d/python/config", max_epython_len))
+			execute(scriptbuf, argv);
 #ifdef HAVE_READLINK
-		if (try_symlink(bufpy, EPREFIX "/usr/bin/python2", max_epython_len))
-			execute(buf, argv);
-		if (try_symlink(bufpy, EPREFIX "/usr/bin/python3", max_epython_len))
-			execute(buf, argv);
+		if (try_symlink(scriptbuf, fnpos, EPREFIX "/usr/bin/python2", max_epython_len))
+			execute(scriptbuf, argv);
+		if (try_symlink(scriptbuf, fnpos, EPREFIX "/usr/bin/python3", max_epython_len))
+			execute(scriptbuf, argv);
 #endif
 
 		for (i = python_impls; *i; ++i)
 		{
-			strcpy(bufpy, *i);
-			execute(buf, argv);
+			set_scriptbuf(scriptbuf, *i, fnpos);
+			execute(scriptbuf, argv);
 		}
-
-		/**
-		 * Strip the hyphen back and try symlink resolution.
-		 */
-		bufpy[-1] = 0;
 
 #ifdef HAVE_READLINK
 		symlink_resolution = 1;

@@ -23,6 +23,6 @@ MY_PYTHON=${1}
 echo "Python used: ${MY_PYTHON}" >&2
 
 write_impl "${MY_PYTHON}" "import sys; sys.exit(0)"
-ln -s "${PWD}/${TEST_TMP}" "${TEST_TMP}.symlink"
+do_sym "${PWD}/${TEST_DIR}/${TEST_TMP}" "${TEST_TMP}.symlink"
 
 do_test "${MY_PYTHON}" "${TEST_TMP}.symlink"
