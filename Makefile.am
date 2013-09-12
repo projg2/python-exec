@@ -1,8 +1,8 @@
 AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-python-impls='python3.1 python3.2 python2.6 python2.7'
 
-bin_PROGRAMS = python-exec2-c
-bin_SCRIPTS = python-exec2
+scriptroot_PROGRAMS = python-exec2-c
+scriptroot_SCRIPTS = python-exec2
 
 check_PROGRAMS = tests/print-bufsiz tests/python-exec2-c
 check_SCRIPTS = tests/python-exec
@@ -22,8 +22,8 @@ CLEANFILES = python-exec2 \
 
 python-exec2: src/python-exec.in
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|${bindir}|" \
-		-e "s|[@]PYTHON_SCRIPTROOT@|${PYTHON_SCRIPTROOT}|" \
+	@SED@ -e "s|[@]bindir@|${scriptrootdir}|" \
+		-e "s|[@]PYTHON_SCRIPTROOT@|${scriptrootdir}|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@

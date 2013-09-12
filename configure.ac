@@ -58,7 +58,7 @@ AC_ARG_WITH([python-scriptroot],
 	])
 AC_DEFINE_UNQUOTED([PYTHON_SCRIPTROOT], ["$with_python_scriptroot"],
 	[Set to the root directory where wrapped Python scripts are stored])
-AC_SUBST([PYTHON_SCRIPTROOT], [$with_python_scriptroot])
+AC_SUBST([scriptrootdir], [$with_python_scriptroot])
 
 AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 subdir-objects parallel-tests])
 
