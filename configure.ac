@@ -52,12 +52,10 @@ fi
 
 AC_ARG_WITH([python-scriptroot],
 	[AS_HELP_STRING([--with-python-scriptroot=PATH],
-		[Root directory for wrapped python scripts (default: /usr/lib/python-exec)])],,
+		[Root directory for wrapped python scripts (default: \${exec_prefix}/lib/python-exec)])],,
 	[
-		with_python_scriptroot=/usr/lib/python-exec
+		with_python_scriptroot=\${exec_prefix}/lib/python-exec
 	])
-AC_DEFINE_UNQUOTED([PYTHON_SCRIPTROOT], ["$with_python_scriptroot"],
-	[Set to the root directory where wrapped Python scripts are stored])
 AC_SUBST([scriptrootdir], [$with_python_scriptroot])
 
 AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 subdir-objects parallel-tests])

@@ -8,9 +8,10 @@ check_PROGRAMS = tests/print-bufsiz tests/python-exec2-c
 check_SCRIPTS = tests/python-exec
 
 python_exec2_c_SOURCES = src/python-exec-c.c
+python_exec2_c_CPPFLAGS = -DPYTHON_SCRIPTROOT=\"${scriptrootdir}\"
 
 tests_python_exec2_c_SOURCES = tests/python-exec-c.c
-tests_python_exec2_c_CPPFLAGS = -DTEST_SCRIPTROOT=\"tests\"
+tests_python_exec2_c_CPPFLAGS = -DPYTHON_SCRIPTROOT=\"tests\"
 
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 

@@ -23,11 +23,6 @@
 #	define BUFFER_SIZE BUFSIZ
 #endif
 
-#ifdef TEST_SCRIPTROOT /* override for tests */
-#	undef PYTHON_SCRIPTROOT
-#	define PYTHON_SCRIPTROOT TEST_SCRIPTROOT
-#endif
-
 /* Python script root directory */
 const char python_scriptroot[] = PYTHON_SCRIPTROOT "/";
 /* All possible EPYTHON values, provided to the configure script. */
