@@ -52,9 +52,9 @@ fi
 
 AC_ARG_WITH([python-scriptroot],
 	[AS_HELP_STRING([--with-python-scriptroot=PATH],
-		[Root directory for wrapped python scripts (default: /usr/lib/python-bin)])],,
+		[Root directory for wrapped python scripts (default: /usr/lib/python-exec)])],,
 	[
-		with_python_scriptroot=/usr/lib/python-bin
+		with_python_scriptroot=/usr/lib/python-exec
 	])
 AC_DEFINE_UNQUOTED([PYTHON_SCRIPTROOT], ["$with_python_scriptroot"],
 	[Set to the root directory where wrapped Python scripts are stored])
