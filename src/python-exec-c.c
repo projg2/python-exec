@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 		}
 
 		if (!symlink_resolution)
-			memcpy(buf, script, len);
+			memcpy(buf, script, len + 1);
 #ifdef HAVE_READLINK
 		else
 		{
