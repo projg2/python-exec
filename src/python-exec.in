@@ -4,9 +4,9 @@
 # Released under the terms of the 2-clause BSD license.
 #
 # This is not the script you are looking for. This is just a wrapper.
-# The actual scripts of this application were installed with -python*,
-# -pypy* or -jython* suffixes. You are most likely looking for one
-# of those.
+# The actual scripts of this application were installed
+# in subdirectories of @PYTHON_SCRIPTROOT@.
+# You are most likely looking for one of those.
 
 from __future__ import with_statement
 import os, os.path, sys
