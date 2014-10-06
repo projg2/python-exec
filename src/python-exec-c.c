@@ -110,10 +110,10 @@ static int try_file(char* bufp, const char* progname,
 		rd = fread(bufp, 1, max_len+2, f);
 		if (rd > 0 && feof(f))
 		{
-			if (bufp[rd-2] == '\n')
+			if (bufp[rd-1] == '\n')
 				--rd;
-			bufp[rd-1] = '/';
-			strcpy(&bufp[rd], progname);
+			bufp[rd] = '/';
+			strcpy(&bufp[rd+1], progname);
 
 			fclose(f);
 			return 1;
