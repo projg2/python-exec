@@ -369,12 +369,10 @@ int main(int argc, char* argv[])
 			execute(scriptbuf, argv);
 		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/config", max_epython_len))
 			execute(scriptbuf, argv);
-#ifdef HAVE_READLINK
-		if (try_symlink(bufpy, fnpos, EPREFIX "/usr/bin/python2", max_epython_len))
+		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/python2", max_epython_len))
 			execute(scriptbuf, argv);
-		if (try_symlink(bufpy, fnpos, EPREFIX "/usr/bin/python3", max_epython_len))
+		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/python3", max_epython_len))
 			execute(scriptbuf, argv);
-#endif
 
 		for (i = python_impls; *i; ++i)
 		{
