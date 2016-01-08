@@ -112,7 +112,7 @@ static int try_file(char* bufp, const char* progname,
 		{
 			if (bufp[rd-1] == '\n')
 				--rd;
-			bufp[rd] = '/';
+			bufp[rd] = path_sep;
 			strcpy(&bufp[rd+1], progname);
 
 			fclose(f);
@@ -157,7 +157,7 @@ static int try_symlink(char* bufp, const char* progname,
 	{
 		if (progname)
 		{
-			bufp[rd] = '/';
+			bufp[rd] = path_sep;
 			strcpy(&bufp[rd+1], progname);
 		}
 		else
