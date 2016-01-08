@@ -180,7 +180,7 @@ static int try_symlink(char* bufp, const char* progname,
  *
  * Returns the symlink length or 0 if the file is not a symlink.
  */
-size_t get_symlink_length(const char* path)
+static size_t get_symlink_length(const char* path)
 {
 	struct stat st;
 
@@ -213,7 +213,7 @@ size_t get_symlink_length(const char* path)
  *
  * Does not return if execution succeeds. Returns otherwise.
  */
-void execute(char* script, char** argv)
+static void execute(char* script, char** argv)
 {
 	execv(script, argv);
 
