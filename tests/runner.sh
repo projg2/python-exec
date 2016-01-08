@@ -19,7 +19,7 @@ TEST_TMP=${TEST_NAME}.tmp
 # helper functions
 write_impl() {
 	mkdir -p "${TEST_DIR}/${1}" && \
-	echo "${2}" > "${TEST_DIR}/${1}/${TEST_TMP}${3}" && \
+	printf '%b' "${2}" > "${TEST_DIR}/${1}/${TEST_TMP}${3}" && \
 	chmod -w,+x "${TEST_DIR}/${1}/${TEST_TMP}${3}"
 }
 

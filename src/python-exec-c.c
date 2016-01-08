@@ -246,7 +246,8 @@ int main(int argc, char* argv[])
 	char scriptbuf[BUFFER_SIZE];
 	char* bufpy;
 
-	const char* script = argv[1];
+	const char* slash;
+	const char* script;
 	int symlink_resolution = 0;
 
 #ifndef NDEBUG
@@ -256,13 +257,23 @@ int main(int argc, char* argv[])
 	memset(scriptbuf, 'Z', sizeof(buf));
 #endif
 
-	if (!script || !script[0])
+	/* figure out basename from argv[0] */
+	slash = strrchr(argv[0], path_sep);
+	/* if we are called directly (via a shebang), script comes
+	 * as argv[1] */
+	if (!strcmp(slash ? &slash[1] : argv[0], "python-exec2-c"))
 	{
-		fprintf(stderr, "Usage: %s <script>\n", argv[0]);
-		return EXIT_FAILURE;
-	}
+		script = argv[1];
+		++argv;
 
-	++argv;
+		if (!script || !script[0])
+		{
+			fprintf(stderr, "Usage: %s <script>\n", argv[0]);
+			return EXIT_FAILURE;
+		}
+	}
+	else /* otherwise, use argv[0] */
+		script = argv[0];
 
 	/* put the always-common part in */
 	memcpy(scriptbuf, python_scriptroot, sizeof(python_scriptroot));

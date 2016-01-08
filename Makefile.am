@@ -46,7 +46,7 @@ LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
 
 TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/pythonwrap-test tests/pythonwrap-__file__-test \
-	tests/long-path-test
+	tests/long-path-test tests/c-symlink-test
 XFAIL_TESTS = tests/long-path-test
 
 if HAVE_READLINK
