@@ -14,11 +14,11 @@ case $with_python_impls in
 esac
 
 # generate array of implementations
-python_impls='0'
+python_impls='{ 0, 0 }'
 max_len=0
 for i in $with_python_impls
 do
-	python_impls="\"$i\", $python_impls"
+	python_impls="{ \"$i\", IMPL_DEFAULT }, $python_impls"
 	if test $max_len -lt ${#i}; then
 		max_len=${#i}
 	fi

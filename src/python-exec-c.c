@@ -1,6 +1,6 @@
 /* python-exec -- a Gentoo tool to choose the correct Python script
  * variant for currently selected Python implementation.
- * (c) 2012 Michał Górny
+ * (c) 2012-2016 Michał Górny
  * Licensed under the terms of the 2-clause BSD license.
  */
 
@@ -25,12 +25,25 @@
 
 /* Python script root directory */
 const char python_scriptroot[] = PYTHON_SCRIPTROOT "/";
-/* All possible EPYTHON values, provided to the configure script. */
-const char* const python_impls[] = { PYTHON_IMPLS };
 /* Maximum length of an EPYTHON value. */
 const size_t max_epython_len = MAX_EPYTHON_LEN;
 
 const char path_sep = '/';
+
+enum python_impl_preference
+{
+	IMPL_DEFAULT = -1,
+};
+
+struct python_impl
+{
+	const char* name;
+	int preference;
+};
+
+const struct python_impl python_impls[] = {
+	PYTHON_IMPLS
+};
 
 /**
  * Set path in scriptbuf for given impl.
@@ -241,7 +254,7 @@ static void execute(char* script, char** argv)
  */
 int main(int argc, char* argv[])
 {
-	const char* const* i;
+	const struct python_impl* i;
 	char buf[BUFFER_SIZE];
 	char scriptbuf[BUFFER_SIZE];
 	char* bufpy;
@@ -385,9 +398,9 @@ int main(int argc, char* argv[])
 		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/python3", max_epython_len))
 			execute(scriptbuf, argv);
 
-		for (i = python_impls; *i; ++i)
+		for (i = python_impls; i->name; ++i)
 		{
-			set_scriptbuf(bufpy, *i, fnpos);
+			set_scriptbuf(bufpy, i->name, fnpos);
 			execute(scriptbuf, argv);
 		}
 
