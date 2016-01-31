@@ -1,0 +1,22 @@
+#/etc/python-exec/python-exec.conf
+# python-exec global preference configuration
+#
+# This file specifies global Python preference for python-exec. It
+# determines which implementations will be used when wrapped Python
+# scripts or generic Python wrappers (such as /usr/bin/python) are
+# started with no implementation override (EPYTHON).
+#
+# The preference file should list Python implementations, one per line,
+# in EPYTHON-format (e.g. python3.5), in order of preference. The most
+# preferred implementation should be listed first. The program will use
+# the most preferred implementation that is supported by it.
+#
+# If none of the listed implementations are supported, python-exec will
+# attempt to use the remaining supported implementations in default
+# order.
+#
+# Note: this file can be modified by calls to 'eselect python'.
+
+python3.5
+python3.4
+python2.7

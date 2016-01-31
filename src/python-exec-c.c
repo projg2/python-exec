@@ -90,6 +90,76 @@ static int set_impl_preference(const char* impl, int pref)
 }
 
 /**
+ * Try to read full implementation preference from specified
+ * configuration file.
+ *
+ * @path Path to the configuration file.
+ *
+ * @pref Minimal requested preference value.
+ *
+ * Returns 1 if preferences were read from the file, 0 otherwise.
+ * In the latter case, legacy files should be read instead.
+ */
+static int try_preferences_from_config(const char* path, int pref)
+{
+	char buf[BUFFER_SIZE];
+	int continuation = 0;
+
+	FILE* f = fopen(path, "r");
+
+	if (f)
+	{
+		while (fgets(buf, sizeof(buf), f))
+		{
+			int impl_ret;
+			size_t len = strlen(buf);
+
+			/* Strip the trailing newline, and decrease length */
+			if (buf[len-1] == '\n')
+				buf[--len] = '\0';
+			/* No newline is allowed on EOF */
+			else if (!feof(f))
+			{
+				/* Ignore the following read as a continuation */
+				continuation = 1;
+				continue;
+			}
+			else if (continuation)
+			{
+				/* This is a continuation of a very long line, ignore */
+				continuation = 0;
+				continue;
+			}
+
+
+			/* Ignore lines too long to be valid, empty lines
+			 * and comments */
+			if (len > max_epython_len || len == 0 || buf[0] == '#')
+				continue;
+
+			impl_ret = set_impl_preference(buf, pref);
+			if (impl_ret == pref)
+				++pref;
+			else if (impl_ret == IMPL_DEFAULT)
+				fprintf(stderr, "python-exec: Invalid impl in %s: %s\n",
+						path, buf);
+		}
+
+		if (ferror(f))
+			fprintf(stderr, "python-exec: Error reading %s: %s\n",
+					path, strerror(errno));
+
+		fclose(f);
+		return 1;
+	}
+	else if (errno != ENOENT)
+		fprintf(stderr, "python-exec: Unable to open %s: %s\n",
+			path, strerror(errno));
+
+	return 0;
+}
+
+/**
  * Try to read implementation from a single-value file, and set its
  * preference to @pref.
  *
@@ -138,14 +208,15 @@ static void load_configuration()
 	/**
 	 * The implementation check order:
 	 * 1) environment variable EPYTHON (local choice),
-	 * 2) eselect-python main Python interpreter,
-	 * 3) eselect-python Python 2 & Python 3 choices,
-	 * 4) any of the supported implementations.
+	 * 2a) python-exec.conf or...
+	 * 2b1) eselect-python main Python interpreter,
+	 * 2b2) eselect-python Python 2 & Python 3 choices,
+	 * 3) any of the supported implementations.
 	 *
-	 * For 3), the order is basically irrelevant since whichever
-	 * is preferred will be tried in 2) anyway.
+	 * For 2b2), the order is basically irrelevant since whichever
+	 * is preferred will be tried in 2b1) anyway.
 	 *
-	 * 4) uses the eclass-defined order.
+	 * 3) uses the eclass-defined order.
 	 */
 	int curr_pref = 0;
 	const char* epython;
@@ -160,12 +231,16 @@ static void load_configuration()
 					epython);
 	}
 
-	curr_pref += try_preference_from_file(
-			EPREFIX "/etc/env.d/python/config", curr_pref);
-	curr_pref += try_preference_from_file(
-			EPREFIX "/etc/env.d/python/python2", curr_pref);
-	curr_pref += try_preference_from_file(
-			EPREFIX "/etc/env.d/python/python3", curr_pref);
+	if (!try_preferences_from_config(
+				EPREFIX "/etc/python-exec/python-exec.conf", curr_pref))
+	{
+		curr_pref += try_preference_from_file(
+				EPREFIX "/etc/env.d/python/config", curr_pref);
+		curr_pref += try_preference_from_file(
+				EPREFIX "/etc/env.d/python/python2", curr_pref);
+		curr_pref += try_preference_from_file(
+				EPREFIX "/etc/env.d/python/python3", curr_pref);
+	}
 }
 
 #ifdef HAVE_READLINK
