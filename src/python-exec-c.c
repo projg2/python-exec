@@ -41,7 +41,7 @@ struct python_impl
 	int preference;
 };
 
-const struct python_impl python_impls[] = {
+struct python_impl python_impls[] = {
 	PYTHON_IMPLS
 };
 
@@ -63,79 +63,107 @@ const struct python_impl python_impls[] = {
 }
 
 /**
- * Try to obtain the value of an environment variable.
+ * Set preference for implementation, if it is not set already.
  *
- * @bufp points to the buffer.
+ * @impl Implementation to set preference for.
  *
- * @progname contains the program basename.
+ * @pref Requested preference value.
  *
- * @variable contains the environment variable name.
- *
- * @max_len specifies the maximum value length. The buffer must have
- * at least one byte more for the null terminator.
- *
- * Returns 1 on success, 0 otherwise.
+ * Returns 1 if preference has been updated, 0 if impl is not valid
+ * or has non-default preference value set.
  */
-static int try_env(char* bufp, const char* progname,
-		const char* variable, size_t max_len)
+static int set_impl_preference(const char* impl, int pref)
 {
-	const char* epython = getenv(variable);
+	struct python_impl* i;
 
-	if (epython)
+	for (i = python_impls; i->name; ++i)
 	{
-		if (strlen(epython) <= max_len)
+		if (!strcmp(impl, i->name) && i->preference == IMPL_DEFAULT)
 		{
-			set_scriptbuf(bufp, epython, progname);
+			i->preference = pref;
 			return 1;
 		}
-		else
-			fprintf(stderr, "${%s} value invalid (too long).\n",
-					variable);
 	}
 
 	return 0;
 }
 
 /**
- * Try to read contents of a regular file.
+ * Try to read implementation from a single-value file, and set its
+ * preference to @pref.
  *
- * @bufp points to the buffer.
+ * @path Path to file containing the preference.
  *
- * @progname contains the program basename.
+ * @pref Requested preference value.
  *
- * @path contains the file path.
- *
- * @max_len specifies the maximum value length. The buffer must have
- * at least one byte more for the null terminator.
- *
- * Returns 1 on success, 0 otherwise.
+ * Returns 1 if preference has been updated, 0 if path could not be
+ * read, contains an invalid implementation or the implementation has
+ * non-default preference value set already.
  */
-static int try_file(char* bufp, const char* progname,
-		const char* path, size_t max_len)
+static int try_preference_from_file(const char* path, int pref)
 {
 	FILE* f = fopen(path, "r");
+	/* +1 for '\n', +2 to enforce EOF */
+	char buf[max_epython_len + 2];
 
 	if (f)
 	{
 		size_t rd;
 
-		/* +1 for '\n', +2 to enforce EOF */
-		rd = fread(bufp, 1, max_len+2, f);
+		rd = fread(buf, 1, sizeof(buf), f);
 		if (rd > 0 && feof(f))
 		{
-			if (bufp[rd-1] == '\n')
+			if (buf[rd-1] == '\n')
 				--rd;
-			bufp[rd] = path_sep;
-			strcpy(&bufp[rd+1], progname);
+			/* ensure null termination */
+			buf[rd] = 0;
 
 			fclose(f);
-			return 1;
+			return set_impl_preference(buf, pref);
 		}
 
 		fclose(f);
 	}
 
 	return 0;
+}
+
+/**
+ * Load configuration files and set implementation preferences
+ * accordingly.
+ */
+static void load_configuration()
+{
+	/**
+	 * The implementation check order:
+	 * 1) environment variable EPYTHON (local choice),
+	 * 2) eselect-python main Python interpreter,
+	 * 3) eselect-python Python 2 & Python 3 choices,
+	 * 4) any of the supported implementations.
+	 *
+	 * For 3), the order is basically irrelevant since whichever
+	 * is preferred will be tried in 2) anyway.
+	 *
+	 * 4) uses the eclass-defined order.
+	 */
+	int curr_pref = 0;
+	const char* epython;
+
+	epython = getenv("EPYTHON");
+	if (epython)
+	{
+		if (set_impl_preference(epython, curr_pref))
+			++curr_pref;
+		else
+			fprintf(stderr, "EPYTHON value invalid (%s).\n", epython);
+	}
+
+	curr_pref += try_preference_from_file(
+			EPREFIX "/etc/env.d/python/config", curr_pref);
+	curr_pref += try_preference_from_file(
+			EPREFIX "/etc/env.d/python/python2", curr_pref);
+	curr_pref += try_preference_from_file(
+			EPREFIX "/etc/env.d/python/python3", curr_pref);
 }
 
 #ifdef HAVE_READLINK
@@ -254,7 +282,6 @@ static void execute(char* script, char** argv)
  */
 int main(int argc, char* argv[])
 {
-	const struct python_impl* i;
 	char buf[BUFFER_SIZE];
 	char scriptbuf[BUFFER_SIZE];
 	char* bufpy;
@@ -262,6 +289,9 @@ int main(int argc, char* argv[])
 	const char* slash;
 	const char* script;
 	int symlink_resolution = 0;
+
+	const struct python_impl* i;
+	int pref;
 
 #ifndef NDEBUG
 	/* initialize the buffers with some junk
@@ -288,6 +318,8 @@ int main(int argc, char* argv[])
 	else /* otherwise, use argv[0] */
 		script = argv[0];
 
+	load_configuration();
+
 	/* put the always-common part in */
 	memcpy(scriptbuf, python_scriptroot, sizeof(python_scriptroot));
 	bufpy = &scriptbuf[sizeof(python_scriptroot) - 1];
@@ -296,6 +328,7 @@ int main(int argc, char* argv[])
 	{
 		size_t len;
 		char* fnpos;
+		int j;
 
 		if (!symlink_resolution)
 			len = strlen(script);
@@ -377,31 +410,28 @@ int main(int argc, char* argv[])
 			return 127;
 		}
 
-		/**
-		 * The implementation check order:
-		 * 1) environment variable EPYTHON (local choice),
-		 * 2) eselect-python main Python interpreter,
-		 * 3) eselect-python Python 2 & Python 3 choices,
-		 * 4) any of the supported implementations.
-		 *
-		 * For 3), the order is basically irrelevant since whichever
-		 * is preferred will be tried in 2) anyway.
-		 *
-		 * 4) uses the eclass-defined order.
-		 */
-		if (try_env(bufpy, fnpos, "EPYTHON", max_epython_len))
-			execute(scriptbuf, argv);
-		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/config", max_epython_len))
-			execute(scriptbuf, argv);
-		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/python2", max_epython_len))
-			execute(scriptbuf, argv);
-		if (try_file(bufpy, fnpos, EPREFIX "/etc/env.d/python/python3", max_epython_len))
-			execute(scriptbuf, argv);
-
-		for (i = python_impls; i->name; ++i)
+		/* Try j = 0..max-with-any-matches, then IMPL_DEFAULT */
+		j = 0;
+		while (1)
 		{
-			set_scriptbuf(bufpy, i->name, fnpos);
-			execute(scriptbuf, argv);
+			int found_any = 0;
+
+			for (i = python_impls; i->name; ++i)
+			{
+				if (i->preference != j)
+					continue;
+				found_any = 1;
+
+				set_scriptbuf(bufpy, i->name, fnpos);
+				execute(scriptbuf, argv);
+			}
+
+			if (j == IMPL_DEFAULT)
+				break;
+			else if (!found_any)
+				j = IMPL_DEFAULT;
+			else
+				++j;
 		}
 
 #ifdef HAVE_READLINK
