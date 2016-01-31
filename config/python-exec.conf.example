@@ -15,6 +15,11 @@
 # attempt to use the remaining supported implementations in default
 # order.
 #
+# A specific implementation can be disabled by preceding it with
+# a hyphen (-). In this case, the implementation will never be used.
+# If no other implementation is supported by the program, it will fail
+# to start.
+#
 # Note: this file can be modified by calls to 'eselect python'.
 
 python3.5

@@ -33,6 +33,7 @@ const char path_sep = '/';
 enum python_impl_preference
 {
 	IMPL_DEFAULT = -1,
+	IMPL_DISABLED = -2,
 };
 
 struct python_impl
@@ -112,6 +113,8 @@ static int try_preferences_from_config(const char* path, int pref)
 		while (fgets(buf, sizeof(buf), f))
 		{
 			int impl_ret;
+			const char* impl = buf;
+			int impl_pref = pref;
 			size_t len = strlen(buf);
 
 			/* Strip the trailing newline, and decrease length */
@@ -131,13 +134,19 @@ static int try_preferences_from_config(const char* path, int pref)
 				continue;
 			}
 
-
-			/* Ignore lines too long to be valid, empty lines
-			 * and comments */
-			if (len > max_epython_len || len == 0 || buf[0] == '#')
+			/* Ignore empty lines and comments */
+			if (len == 0 || buf[0] == '#')
 				continue;
 
-			impl_ret = set_impl_preference(buf, pref);
+			/* Handle disabling implementations */
+			if (buf[0] == '-')
+			{
+				++impl;
+				impl_pref = IMPL_DISABLED;
+			}
+
+			impl_ret = set_impl_preference(impl, impl_pref);
+			/* == pref intentional here to avoid ++pref on disabled */
 			if (impl_ret == pref)
 				++pref;
 			else if (impl_ret == IMPL_DEFAULT)
