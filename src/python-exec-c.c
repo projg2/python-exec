@@ -69,8 +69,8 @@ struct python_impl python_impls[] = {
  *
  * @pref Requested preference value.
  *
- * Returns 1 if preference has been updated, 0 if impl is not valid
- * or has non-default preference value set.
+ * Returns @pref if preference has been updated, the current preference
+ * level if it has not or IMPL_DEFAULT if impl is unsupported.
  */
 static int set_impl_preference(const char* impl, int pref)
 {
@@ -78,14 +78,15 @@ static int set_impl_preference(const char* impl, int pref)
 
 	for (i = python_impls; i->name; ++i)
 	{
-		if (!strcmp(impl, i->name) && i->preference == IMPL_DEFAULT)
+		if (!strcmp(impl, i->name))
 		{
-			i->preference = pref;
-			return 1;
+			if (i->preference == IMPL_DEFAULT)
+				i->preference = pref;
+			return i->preference;
 		}
 	}
 
-	return 0;
+	return IMPL_DEFAULT;
 }
 
 /**
@@ -119,7 +120,7 @@ static int try_preference_from_file(const char* path, int pref)
 			buf[rd] = 0;
 
 			fclose(f);
-			return set_impl_preference(buf, pref);
+			return set_impl_preference(buf, pref) == pref;
 		}
 
 		fclose(f);
@@ -152,7 +153,7 @@ static void load_configuration()
 	epython = getenv("EPYTHON");
 	if (epython)
 	{
-		if (set_impl_preference(epython, curr_pref))
+		if (set_impl_preference(epython, curr_pref) == curr_pref)
 			++curr_pref;
 		else
 			fprintf(stderr, "EPYTHON value invalid (%s).\n", epython);
