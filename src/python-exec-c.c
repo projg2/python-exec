@@ -156,7 +156,8 @@ static void load_configuration()
 		if (set_impl_preference(epython, curr_pref) == curr_pref)
 			++curr_pref;
 		else
-			fprintf(stderr, "EPYTHON value invalid (%s).\n", epython);
+			fprintf(stderr, "python-exec: EPYTHON value invalid (%s).\n",
+					epython);
 	}
 
 	curr_pref += try_preference_from_file(
