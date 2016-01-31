@@ -308,13 +308,13 @@ int main(int argc, char* argv[])
 	if (!strcmp(slash ? &slash[1] : argv[0], "python-exec2-c"))
 	{
 		script = argv[1];
-		++argv;
-
 		if (!script || !script[0])
 		{
 			fprintf(stderr, "Usage: %s <script>\n", argv[0]);
 			return EXIT_FAILURE;
 		}
+
+		++argv;
 	}
 	else /* otherwise, use argv[0] */
 		script = argv[0];
