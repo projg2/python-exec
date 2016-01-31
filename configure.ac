@@ -6,10 +6,12 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_ARG_WITH([python-impls],
 	[AS_HELP_STRING([--with-python-impls=IMPLS],
 		[The list of supported Python, most preferred last])])
-AS_CASE(["$with_python_impls"], [yes|no|""],
-[
-	AC_MSG_ERROR([Python implementations must be specified using --with-python-impls])
-])
+
+case $with_python_impls in
+	yes|no|"")
+		AC_MSG_ERROR([Python implementations must be specified using --with-python-impls])
+		;;
+esac
 
 # generate array of implementations
 python_impls='0'
@@ -17,10 +19,9 @@ max_len=0
 for i in $with_python_impls
 do
 	python_impls="\"$i\", $python_impls"
-	AS_IF([test $max_len -lt ${#i}],
-	[
+	if test $max_len -lt ${#i}; then
 		max_len=${#i}
-	])
+	fi
 done
 
 AC_DEFINE_UNQUOTED([PYTHON_IMPLS], [$python_impls],
@@ -32,23 +33,25 @@ AC_DEFINE_UNQUOTED([MAX_EPYTHON_LEN], [$max_len],
 AC_ARG_WITH([eprefix],
 	[AS_HELP_STRING([--with-eprefix=EPREFIX],
 		[The Gentoo Prefix base path (EPREFIX)])])
-AS_CASE(["$with_eprefix"],
-	[yes], [AC_MSG_ERROR([--with-eprefix takes a value])],
-	[no], [with_eprefix=])
+case $with_eprefix in
+	yes) AC_MSG_ERROR([--with-eprefix takes a value]);;
+	no) with_eprefix=;;
+esac
 AC_DEFINE_UNQUOTED([EPREFIX], ["$with_eprefix"],
 	[Set to the Gentoo Prefix EPREFIX (if building for Prefix)])
 
 AC_ARG_WITH([buffer-size],
 	[AS_HELP_STRING([--with-buffer-size=SIZE],
 		[Initial static buffer size (default: BUFSIZ)])])
-AS_CASE(["$with_buffer_size"],
-	[yes], [AC_MSG_ERROR([--with-buffer-size takes a numeric value])],
-	[no], [AC_MSG_ERROR([--without-buffer-size is meaningless])])
-if test -n "$with_buffer_size"
-then
-	AC_DEFINE_UNQUOTED([BUFFER_SIZE], [$with_buffer_size],
-		[Set to static buffer size for path])
-fi
+case $with_buffer_size in
+	yes) AC_MSG_ERROR([--with-buffer-size takes a numeric value]);;
+	no) AC_MSG_ERROR([--without-buffer-size is meaningless]);;
+	"") ;;
+	*)
+		AC_DEFINE_UNQUOTED([BUFFER_SIZE], [$with_buffer_size],
+			[Set to static buffer size for path])
+		;;
+esac
 
 AC_ARG_WITH([python-scriptroot],
 	[AS_HELP_STRING([--with-python-scriptroot=PATH],
