@@ -1,5 +1,5 @@
 AM_DISTCHECK_CONFIGURE_FLAGS = \
-	--with-python-impls='python3.1 python3.2 python2.6 python2.7'
+	--with-python-impls='pypy python2.7 python3.3 python3.4 python3.5'
 
 scriptroot_PROGRAMS = python-exec2-c
 scriptroot_SCRIPTS = python-exec2
