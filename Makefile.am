@@ -25,7 +25,7 @@ tests_python_exec2_c_CPPFLAGS = \
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
 BUILT_SOURCES = tests/python-exec-c.c
-EXTRA_DIST = src/python-exec.in
+EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
 	tests/python-exec tests/python-exec2-c \
 	tests/etc/python-exec/python-exec.conf tests/python-exec-c.c \
