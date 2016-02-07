@@ -30,16 +30,6 @@ AC_SUBST([PYTHON_IMPLS], [$with_python_impls])
 AC_DEFINE_UNQUOTED([MAX_EPYTHON_LEN], [$max_len],
 	[Set to the maximum length of EPYTHON (implementation name)])
 
-AC_ARG_WITH([eprefix],
-	[AS_HELP_STRING([--with-eprefix=EPREFIX],
-		[The Gentoo Prefix base path (EPREFIX)])])
-case $with_eprefix in
-	yes) AC_MSG_ERROR([--with-eprefix takes a value]);;
-	no) with_eprefix=;;
-esac
-AC_DEFINE_UNQUOTED([EPREFIX], ["$with_eprefix"],
-	[Set to the Gentoo Prefix EPREFIX (if building for Prefix)])
-
 AC_ARG_WITH([buffer-size],
 	[AS_HELP_STRING([--with-buffer-size=SIZE],
 		[Initial static buffer size (default: BUFSIZ)])])
