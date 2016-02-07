@@ -61,6 +61,42 @@ get_eselected() {
 	set -e
 }
 
+is_preferred() {
+	set +e
+
+	while read l; do
+		case "${l}" in
+			'#'*|-*)
+				;;
+			"${1}")
+				set -e
+				return 0
+				;;
+		esac
+	done <tests/etc/python-exec/python-exec.conf
+
+	set -e
+	return 1
+}
+
+is_disabled() {
+	set +e
+
+	while read l; do
+		case "${l}" in
+			'#'*)
+				;;
+			-"${1}")
+				set -e
+				return 0
+				;;
+		esac
+	done <tests/etc/python-exec/python-exec.conf
+
+	set -e
+	return 1
+}
+
 # catch all failures
 trap 'exit 99' EXIT
 set -e

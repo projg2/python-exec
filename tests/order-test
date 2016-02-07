@@ -4,9 +4,6 @@ echo "${TEST_NAME} -- test whether default preference order is respected"
 
 set -- ${PYTHON_IMPLS}
 
-SEL_PY2=$(get_eselected --python2)
-SEL_PY3=$(get_eselected --python3)
-
 unset FIRST
 while true; do
 	if [ ${#} -lt 1 ]; then
@@ -14,8 +11,8 @@ while true; do
 		do_exit 77
 	fi
 
-	# we need to find two not-selected implementations.
-	if [ "${1}" = "${SEL_PY2}" -o "${1}" = "${SEL_PY3}" ]; then
+	# we need to find two not-selected and not-disabled implementations.
+	if is_preferred "${1}" || is_disabled "${1}"; then
 		shift
 	else
 		if [ -n "${FIRST}" ]; then

@@ -4,9 +4,6 @@ echo "${TEST_NAME} -- test whether Python wrapper respects Python version used"
 
 set -- ${PYTHON_IMPLS}
 
-SEL_PY2=$(get_eselected --python2)
-SEL_PY3=$(get_eselected --python3)
-
 while true; do
 	if [ ${#} -lt 2 ]; then
 		# we can't test a preference without at least two impls ;)
@@ -16,7 +13,7 @@ while true; do
 
 	# EPYTHON can't be one of eselected pythons, otherwise the result
 	# would be inconclusive.
-	if [ "${1}" = "${SEL_PY2}" -o "${1}" = "${SEL_PY3}" ]; then
+	if is_preferred "${1}"; then
 		shift
 	# And we have to have the proper Python version installed.
 	elif ! "${1}" --version >&2; then

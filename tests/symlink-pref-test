@@ -9,6 +9,20 @@ if [ ${#} -lt 2 ]; then
 	do_exit 77
 fi
 
+while true; do
+	if [ ${#} -lt 3 ]; then
+		# we need at least two impls
+		echo 'Not enough implementations to perform test.' >&2
+		do_exit 77
+	fi
+
+	# the 'preferred' impl must not be disabled
+	if ! is_disabled "${1}"; then
+		break
+	fi
+	shift
+done
+
 FIRST=${1}
 export EPYTHON=${2}
 

@@ -5,6 +5,7 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 scriptroot_PROGRAMS = python-exec2-c
 scriptroot_SCRIPTS = python-exec2
 
+check_DATA = tests/etc/python-exec/python-exec.conf
 check_PROGRAMS = tests/print-bufsiz tests/python-exec2-c
 check_SCRIPTS = tests/python-exec
 
@@ -18,7 +19,7 @@ tests_python_exec2_c_SOURCES = tests/python-exec-c.c
 # TODO: create dedicated sysconfdir for tests
 tests_python_exec2_c_CPPFLAGS = \
 	-DPYTHON_SCRIPTROOT=\"tests\" \
-	-DSYSCONFDIR=\"/etc\" \
+	-DSYSCONFDIR=\"tests/etc\" \
 	-UNDEBUG
 
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
@@ -27,7 +28,8 @@ BUILT_SOURCES = tests/python-exec-c.c
 EXTRA_DIST = src/python-exec.in
 CLEANFILES = python-exec2 \
 	tests/python-exec tests/python-exec2-c \
-	tests/python-exec-c.c tests/*.tmp* tests/*/*.tmp*
+	tests/etc/python-exec/python-exec.conf tests/python-exec-c.c \
+	tests/*.tmp* tests/*/*.tmp*
 
 python-exec2: src/python-exec.in
 	rm -f $@ $@.tmp
@@ -35,6 +37,13 @@ python-exec2: src/python-exec.in
 		-e "s|[@]PYTHON_SCRIPTROOT@|${scriptrootdir}|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
+	mv $@.tmp $@
+
+tests/etc/python-exec/python-exec.conf: tests/gen-config.sh
+	$(MKDIR_P) tests/etc/python-exec
+	rm -f $@ $@.tmp
+	sh $(srcdir)/tests/gen-config.sh $(PYTHON_IMPLS) > $@.tmp
+	chmod a-w $@.tmp
 	mv $@.tmp $@
 
 tests/python-exec-c.c: src/python-exec-c.c
@@ -67,7 +76,7 @@ XFAIL_TESTS += \
 	tests/long-symlink-test tests/deep-long-symlink-test
 endif
 
-EXTRA_DIST += tests/runner.sh $(TESTS)
+EXTRA_DIST += tests/runner.sh tests/gen-config.sh $(TESTS)
 
 EXTRA_DIST += NEWS
 NEWS: configure.ac Makefile.am

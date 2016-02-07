@@ -1,15 +1,10 @@
 #!/bin/sh
 
-echo "${TEST_NAME} -- test whether eselect-python is respected"
-
-# Usually, the newest version of Python is eselected. For that reason,
-# this test makes sense only if Python 3 is the main Python interpreter
-# (and thus a 'better' implementation could be selected).
+echo "${TEST_NAME} -- test whether python-exec.conf is respected"
 
 set -- ${PYTHON_IMPLS}
 
-SEL_PY=$(get_eselected)
-
+unset ESELECT
 while true; do
 	if [ ${#} -lt 2 ]; then
 		# we can't test a preference without at least two impls ;)
@@ -18,15 +13,21 @@ while true; do
 	fi
 
 	# Repeat until we find the eselected python.
-	if [ "${1}" = "${SEL_PY}" ]; then
-		break
+	if [ -z "${ESELECT}" ]; then
+		# Find one of the preferred impls.
+		if is_preferred "${1}"; then
+			ESELECT="${1}"
+		fi
+		shift
 	else
+		# The other impl shouldn't be disabled to get conclusive result.
+		if ! is_disabled "${1}"; then
+			BETTER=${1}
+			break
+		fi
 		shift
 	fi
 done
-
-ESELECT=${1}
-BETTER=${2}
 
 echo "other impl: ${BETTER}" >&2
 
