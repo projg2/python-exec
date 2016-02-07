@@ -241,14 +241,14 @@ static void load_configuration()
 	}
 
 	if (!try_preferences_from_config(
-				EPREFIX "/etc/python-exec/python-exec.conf", curr_pref))
+				SYSCONFDIR "/python-exec/python-exec.conf", curr_pref))
 	{
 		curr_pref += try_preference_from_file(
-				EPREFIX "/etc/env.d/python/config", curr_pref);
+				SYSCONFDIR "/env.d/python/config", curr_pref);
 		curr_pref += try_preference_from_file(
-				EPREFIX "/etc/env.d/python/python2", curr_pref);
+				SYSCONFDIR "/env.d/python/python2", curr_pref);
 		curr_pref += try_preference_from_file(
-				EPREFIX "/etc/env.d/python/python3", curr_pref);
+				SYSCONFDIR "/env.d/python/python3", curr_pref);
 	}
 }
 
