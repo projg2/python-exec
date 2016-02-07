@@ -31,7 +31,7 @@ CLEANFILES = python-exec2 \
 	tests/etc/python-exec/python-exec.conf tests/python-exec-c.c \
 	tests/*.tmp* tests/*/*.tmp*
 
-python-exec2: src/python-exec.in
+python-exec2: src/python-exec.in config.status
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|${scriptrootdir}|" \
 		-e "s|[@]PYTHON_SCRIPTROOT@|${scriptrootdir}|" \
@@ -39,7 +39,7 @@ python-exec2: src/python-exec.in
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
-tests/etc/python-exec/python-exec.conf: tests/gen-config.sh
+tests/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
 	$(MKDIR_P) tests/etc/python-exec
 	rm -f $@ $@.tmp
 	sh $(srcdir)/tests/gen-config.sh $(PYTHON_IMPLS) > $@.tmp
@@ -50,7 +50,7 @@ tests/python-exec-c.c: src/python-exec-c.c
 	$(MKDIR_P) tests
 	cp $< $@
 
-tests/python-exec: src/python-exec.in
+tests/python-exec: src/python-exec.in config.status
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|./tests|" \
