@@ -2,38 +2,38 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-buffer-size=128 \
 	--with-python-impls='pypy python2.7 python3.3 python3.4 python3.5'
 
-bin_PROGRAMS = python-exec2-c
-bin_SCRIPTS = python-exec2
+bin_PROGRAMS = python-exec2
+bin_SCRIPTS = python-exec2.py
 
 check_DATA = tests/etc/python-exec/python-exec.conf
-check_PROGRAMS = tests/print-bufsiz tests/python-exec2-c
-check_SCRIPTS = tests/python-exec
+check_PROGRAMS = tests/print-bufsiz tests/python-exec2
+check_SCRIPTS = tests/python-exec2.py
 
-python_exec2_c_SOURCES = src/python-exec-c.c
-python_exec2_c_CPPFLAGS = \
+python_exec2_SOURCES = src/python-exec2.c
+python_exec2_CPPFLAGS = \
 	-DPYTHON_SCRIPTROOT=\"${scriptrootdir}\" \
 	-DSYSCONFDIR=\"${sysconfdir}\" \
 	-DNDEBUG
 
-tests_python_exec2_c_SOURCES = tests/python-exec-c.c
+tests_python_exec2_SOURCES = tests/python-exec2.c
 # TODO: create dedicated sysconfdir for tests
-tests_python_exec2_c_CPPFLAGS = \
+tests_python_exec2_CPPFLAGS = \
 	-DPYTHON_SCRIPTROOT=\"tests\" \
 	-DSYSCONFDIR=\"tests/etc\" \
 	-UNDEBUG
 
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
-BUILT_SOURCES = tests/python-exec-c.c
-EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
-CLEANFILES = python-exec2 \
-	tests/python-exec tests/python-exec2-c \
-	tests/etc/python-exec/python-exec.conf tests/python-exec-c.c \
+BUILT_SOURCES = tests/python-exec2.c
+EXTRA_DIST = src/python-exec2.py.in config/python-exec.conf.example
+CLEANFILES = python-exec2.py \
+	tests/python-exec2.py tests/python-exec2 \
+	tests/etc/python-exec/python-exec.conf tests/python-exec2.c \
 	tests/*.tmp* tests/*/*.tmp*
 
-python-exec2: src/python-exec.in config.status
+python-exec2.py: src/python-exec2.py.in config.status
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|${scriptrootdir}|" \
+	@SED@ -e "s|[@]bindir@|${bindir}|" \
 		-e "s|[@]PYTHON_SCRIPTROOT@|${scriptrootdir}|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
@@ -46,11 +46,11 @@ tests/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec-c.c: src/python-exec-c.c
+tests/python-exec2.c: src/python-exec2.c
 	$(MKDIR_P) tests
 	cp $< $@
 
-tests/python-exec: src/python-exec.in config.status
+tests/python-exec2.py: src/python-exec2.py.in config.status
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|./tests|" \
