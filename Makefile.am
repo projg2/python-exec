@@ -3,7 +3,7 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-python-impls='pypy python2.7 python3.3 python3.4 python3.5'
 
 bin_PROGRAMS = python-exec2-c
-bin_SCRIPTS = python-exec2
+scriptroot_SCRIPTS = python-exec2
 
 check_DATA = tests/etc/python-exec/python-exec.conf
 check_PROGRAMS = tests/print-bufsiz tests/python-exec2-c
