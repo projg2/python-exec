@@ -13,13 +13,13 @@ Makefile.in
 /stamp-h1
 
 /python-exec2
-/python-exec2.py
+/python-exec2-c
 
 /test-suite.log
 /tests/print-bufsiz
-/tests/python-exec2
-/tests/python-exec2.c
-/tests/python-exec2.py
+/tests/python-exec
+/tests/python-exec2-c
+/tests/python-exec-c.c
 /tests/*.log
 /tests/*.tmp*
 /tests/*.trs

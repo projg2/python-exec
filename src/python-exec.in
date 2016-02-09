@@ -1,4 +1,4 @@
-#!@bindir@/python-exec2
+#!@bindir@/python-exec2-c
 # vim:fileencoding=utf-8:ft=python
 # (c) 2012 Michał Górny
 # Released under the terms of the 2-clause BSD license.
