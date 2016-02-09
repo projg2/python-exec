@@ -33,7 +33,7 @@ CLEANFILES = python-exec2 \
 
 python-exec2: src/python-exec.in config.status
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|${scriptrootdir}|" \
+	@SED@ -e "s|[@]bindir@|${bindir}|" \
 		-e "s|[@]PYTHON_SCRIPTROOT@|${scriptrootdir}|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
