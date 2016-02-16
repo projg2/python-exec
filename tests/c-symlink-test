@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "${TEST_NAME} -- test whether python-exec2-c can be symlinked as wrapper"
+echo "${TEST_NAME} -- test whether python-exec2c can be symlinked as wrapper"
 
 set -- ${PYTHON_IMPLS}
 
@@ -17,6 +17,6 @@ echo "EPYTHON: ${EPYTHON}" >&2
 
 # replace with C wrapper
 rm "${TEST_DIR}/${TEST_TMP}"
-ln -s python-exec2-c "${TEST_DIR}/${TEST_TMP}"
+ln -s python-exec2c "${TEST_DIR}/${TEST_TMP}"
 
 do_test "${TEST_TMP}"
