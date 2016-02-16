@@ -9,13 +9,13 @@ check_DATA = tests/etc/python-exec/python-exec.conf
 check_PROGRAMS = tests/print-bufsiz tests/python-exec2c
 check_SCRIPTS = tests/python-exec
 
-python_exec2c_SOURCES = src/python-exec-c.c
+python_exec2c_SOURCES = src/python-exec.c
 python_exec2c_CPPFLAGS = \
 	-DPYTHON_SCRIPTROOT=\"${scriptrootdir}\" \
 	-DSYSCONFDIR=\"${sysconfdir}\" \
 	-DNDEBUG
 
-tests_python_exec2c_SOURCES = tests/python-exec-c.c
+tests_python_exec2c_SOURCES = tests/python-exec.c
 # TODO: create dedicated sysconfdir for tests
 tests_python_exec2c_CPPFLAGS = \
 	-DPYTHON_SCRIPTROOT=\"tests\" \
@@ -24,11 +24,11 @@ tests_python_exec2c_CPPFLAGS = \
 
 tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
-BUILT_SOURCES = tests/python-exec-c.c
+BUILT_SOURCES = tests/python-exec.c
 EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
 	tests/python-exec tests/python-exec2c \
-	tests/etc/python-exec/python-exec.conf tests/python-exec-c.c \
+	tests/etc/python-exec/python-exec.conf tests/python-exec.c \
 	tests/*.tmp* tests/*/*.tmp*
 
 python-exec2: src/python-exec.in config.status
@@ -46,7 +46,7 @@ tests/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec-c.c: src/python-exec-c.c
+tests/python-exec.c: src/python-exec.c
 	$(MKDIR_P) tests
 	cp $< $@
 
