@@ -1,6 +1,6 @@
 #!@bindir@/python-exec2c
 # vim:fileencoding=utf-8:ft=python
-# (c) 2012 Michał Górny
+# (c) 2012-2016 Michał Górny
 # Released under the terms of the 2-clause BSD license.
 #
 # This is not the script you are looking for. This is just a wrapper.
@@ -9,7 +9,7 @@
 # You are most likely looking for one of those.
 
 from __future__ import with_statement
-import os, os.path, sys
+import errno, os, os.path, sys
 
 try:
 	from epython import EPYTHON
@@ -37,7 +37,10 @@ while True:
 
 		with open(__file__, 'r', **kwargs) as f:
 			data = f.read()
-	except IOError:
+	except IOError as e:
+		if e.errno != errno.ENOENT:
+			raise
+
 		# follow symlinks (if supported)
 		try:
 			sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
