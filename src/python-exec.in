@@ -43,18 +43,18 @@ while True:
 			continue
 		elif e.errno != errno.ENOENT:
 			raise
-
-		# follow symlinks (if supported)
-		try:
-			sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
-					os.readlink(sys.argv[0]))
-		except (OSError, AttributeError):
-			# no more symlinks? then it's time to fail.
-			sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
-					% EPYTHON)
-			sys.exit(127)
 	else:
 		break
+
+	# follow symlinks (if supported)
+	try:
+		sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
+				os.readlink(sys.argv[0]))
+	except (OSError, AttributeError):
+		# no more symlinks? then it's time to fail.
+		sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
+				% EPYTHON)
+		sys.exit(127)
 
 sys.argv[0] = __file__
 exec(data)
