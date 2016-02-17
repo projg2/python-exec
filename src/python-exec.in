@@ -50,7 +50,9 @@ while True:
 	try:
 		sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
 				os.readlink(sys.argv[0]))
-	except (OSError, AttributeError):
+	except (OSError, AttributeError) as e:
+		if isinstance(e, OSError) and e.errno != errno.EINVAL:
+			raise
 		# no more symlinks? then it's time to fail.
 		sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
 				% EPYTHON)
