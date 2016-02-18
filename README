@@ -1,0 +1,85 @@
+python-exec
+(c) 2012-2016 Michał Górny
+Licensed under the terms of the 2-clause BSD license.
+
+
+Introduction and usage
+======================
+
+python-exec is a wrapper for Python scripts and executables designed
+in order to facilitate the support for installing multiple Python
+implementations in parallel.
+
+python-exec provides support for wrapping Python implementations whose
+identifiers (executable basenames) are passed during configure call
+(obligatory --with-python-impls parameter).
+
+In order for python-exec to work, wrapped scripts and executables need
+to be installed in subdirectories of scriptroot (defined through
+--with-python-scriptroot parameter, ${prefix}/lib/python-exec
+by default) whose names match appropriate implementations. Afterwards,
+python-exec2 wrapper should be symlinked or copied into an appropriate
+executable directory using the name of the wrapped script.
+
+In other words, to wrap /usr/bin/foo, you would:
+
+1. install the real script into /usr/lib/python-exec/pythonX.Y/foo,
+
+2. symlink /usr/bin/foo -> /usr/lib/python-exec/python-exec2.
+
+Afterwards, whenever the wrapper script is run python-exec will try to
+determine the most preferred Python implementation supported by
+the script and run the appropriate variant. It should be noted that
+the wrapped script needs to have an appropriate shebang in order to run
+matching Python interpreter.
+
+
+Configuration
+=============
+
+python-exec supports two configuration layers: EPYTHON environment
+variable and a configuration file.
+
+The EPYTHON environment variable can be used to configure python-exec at
+runtime and/or override local configuration. If it is defined, it
+specifies the most preferred Python interpreter that should be used to
+run the script. If the specified interpreter is unsupported by
+the script, python-exec will fall back to configuration file and/or
+default order.
+
+The configuration file (example in config/python-exec.conf.example)
+needs to be installed in ${sysconfdir}/python-exec/python-exec.conf. It
+lists preferred Python implementations in preference order. For more
+information, please look at the detailed usage guide in the example
+file.
+
+If none of the explicitly preferred implementations are supported by
+the script, python-exec falls back to trying any other implementation
+known to it (i.e. specified at build-time) that is not explicitly
+disabled via configuration.
+
+
+Recovery notes
+==============
+
+python-exec2 itself and its build system does not require any version of
+Python being installed. This also means that it can be securely
+reinstalled if it becomes broken and Python scripts stop to work
+correctly.
+
+If the python-exec2 wrapper (in ${python_scriptroot}) becomes damaged
+(e.g. overwritten by insecure use of old version of distutils), you can
+replace it with python-exec2c wrapper (from ${bindir}). This will break
+uses of 'python /usr/bin/foo' but otherwise render the wrapper
+functional.
+
+The python-exec2c wrapper can be called directly. For example, in order
+to execute the script foo, you can call:
+
+    python-exec2c foo
+
+All wrapped scripts are installed in ${python_scriptroot} and usable
+directly. If everything else fails, you can simply call:
+
+    /usr/lib/python-exec/python3.4/foo
+
