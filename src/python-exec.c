@@ -342,6 +342,11 @@ static size_t get_symlink_length(const char* path)
 static void execute(char* script, char** argv)
 {
 	execv(script, argv);
+
+	/* warn about other errors but try hard to run something */
+	if (errno != ENOENT)
+		fprintf(stderr, "python-exec: Unable to execute %s: %s.\n",
+				script, strerror(errno));
 }
 
 /**
