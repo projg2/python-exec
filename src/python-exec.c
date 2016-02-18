@@ -330,8 +330,7 @@ static size_t get_symlink_length(const char* path)
 #endif
 
 /**
- * Run the specified script using execvp(). Fallback to the 'env' tool
- * if the system does not support shebangs natively.
+ * Run the specified script using execvp().
  *
  * @script specifies path to the script to execute.
  *
@@ -343,19 +342,6 @@ static size_t get_symlink_length(const char* path)
 static void execute(char* script, char** argv)
 {
 	execv(script, argv);
-
-	if (errno == ENOEXEC) /* mingw32? */
-	{
-		/* Preserve argv[0], and put the full path in argv[1]. */
-		--argv;
-		argv[0] = argv[1];
-		argv[1] = script;
-
-		execvp("env", argv);
-
-		/* Restore old argv[0] pos. */
-		argv[1] = argv[0];
-	}
 }
 
 /**
