@@ -76,7 +76,7 @@ endif
 
 EXTRA_DIST += tests/runner.sh tests/gen-config.sh $(TESTS)
 
-EXTRA_DIST += NEWS
+EXTRA_DIST += COPYING NEWS README
 NEWS: configure.ac Makefile.am
 	git for-each-ref refs/tags --sort '-*committerdate' \
 		--format '# %(tag) (%(*committerdate:short))%0a%(contents:body)' \
