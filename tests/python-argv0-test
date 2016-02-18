@@ -1,0 +1,43 @@
+#!/bin/sh
+
+echo "${TEST_NAME} -- regression test for argv[0] -> sys.executable setting"
+
+set -- ${PYTHON_IMPLS}
+
+while true; do
+	if [ ${#} -lt 1 ]; then
+		echo 'No working Python interpreter found (?!)' >&2
+		do_exit 77
+	fi
+
+	# We have to have the proper Python version installed.
+	if ! "${1}" --version >&2; then
+		shift
+	else
+		break
+	fi
+done
+
+MY_PYTHON=${1}
+
+echo "Python used: ${MY_PYTHON}" >&2
+
+PYTHON_PATH=$(type -P "${MY_PYTHON}")
+
+mkdir -p "${TEST_DIR}/${MY_PYTHON}"
+ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${MY_PYTHON}/python"
+
+# replace with C wrapper
+ln -f -s python-exec2c "${TEST_DIR}/python"
+
+ORIG_EXE=$("${PYTHON_PATH}" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
+WRAP_EXE=$("${TEST_DIR}/python" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
+
+echo "Original realpath(sys.executable): ${ORIG_EXE}"
+echo "Wrapped realpath(sys.executable): ${WRAP_EXE}"
+
+if [ "${ORIG_EXE}" = "${WRAP_EXE}" ]; then
+	do_exit 0
+else
+	do_exit 1
+fi

@@ -28,7 +28,8 @@ EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
 	tests/python-exec tests/python-exec2c \
 	tests/etc/python-exec/python-exec.conf \
-	tests/*.tmp* tests/*/*.tmp*
+	tests/*.tmp* tests/*/*.tmp* \
+	tests/python tests/*/python
 
 python-exec2: src/python-exec.in config.status
 	rm -f $@ $@.tmp
@@ -60,7 +61,7 @@ TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/pythonwrap-test tests/pythonwrap-__file__-test \
 	tests/long-path-test tests/c-symlink-test \
 	tests/disable-test tests/epython-disable-test \
-	tests/order-disable-test
+	tests/order-disable-test tests/python-argv0-test
 XFAIL_TESTS = tests/long-path-test tests/disable-test
 
 if HAVE_READLINK

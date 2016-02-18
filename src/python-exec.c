@@ -410,6 +410,16 @@ int main(int argc, char* argv[])
 	memcpy(scriptbuf, python_scriptroot, sizeof(python_scriptroot));
 	bufpy = &scriptbuf[sizeof(python_scriptroot) - 1];
 
+	/* pass the full wrapped script path as argv[0], because:
+	 * a. Linux will do it anyway for interpreted scripts, so this
+	 *    guarantees consistent behavior across platforms,
+	 * b. some programs do realpath(argv[0]) in order to find their
+	 *    executable -- it ends up badly if they find python-exec
+	 *    instead. This is especially the case when wrapping python
+	 *    itself and scripts do os.path.realpath(sys.executable).
+	 */
+	argv[0] = scriptbuf;
+
 	while (1)
 	{
 		size_t len;
