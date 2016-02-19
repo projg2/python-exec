@@ -22,7 +22,7 @@ MY_PYTHON=${1}
 
 echo "Python used: ${MY_PYTHON}" >&2
 
-PYTHON_PATH=$(type -P "${MY_PYTHON}")
+PYTHON_PATH=$(command -v "${MY_PYTHON}")
 
 mkdir -p "${TEST_DIR}/${MY_PYTHON}"
 ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${MY_PYTHON}/python"
