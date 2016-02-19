@@ -258,10 +258,7 @@ static void load_configuration()
  * Try to read a symlink target.
  *
  * @bufp points to the space in the buffer where the target shall be
- * written (first byte after the hyphen).
- *
- * @progname contains the program basename. May be NULL to disable
- * scriptbuf syntax enforcing.
+ * written.
  *
  * @path contains the symlink path.
  *
@@ -270,8 +267,7 @@ static void load_configuration()
  *
  * Returns 1 on success, 0 otherwise.
  */
-static int try_symlink(char* bufp, const char* progname,
-		const char* path, size_t max_len)
+static int try_symlink(char* bufp, const char* path, size_t max_len)
 {
 	size_t rd;
 
@@ -282,13 +278,7 @@ static int try_symlink(char* bufp, const char* progname,
 	/* [max_len] could mean that the name is too long */
 	if (rd > 0 && rd < max_len + 1)
 	{
-		if (progname)
-		{
-			bufp[rd] = path_sep;
-			strcpy(&bufp[rd+1], progname);
-		}
-		else
-			bufp[rd] = 0;
+		bufp[rd] = 0;
 		return 1;
 	}
 
@@ -467,7 +457,7 @@ int main(int argc, char* argv[])
 			else
 				++fnpos;
 
-			if (!try_symlink(fnpos, 0, buf, len))
+			if (!try_symlink(fnpos, buf, len))
 			{
 				fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
 						script, buf,
