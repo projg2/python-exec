@@ -11,6 +11,7 @@ check_SCRIPTS = tests/python-exec
 
 python_exec2c_SOURCES = src/python-exec.c
 python_exec2c_CPPFLAGS = \
+	-DEXEEXT=\"${EXEEXT}\" \
 	-DPYTHON_SCRIPTROOT=\"${scriptrootdir}\" \
 	-DSYSCONFDIR=\"${sysconfdir}\" \
 	-DNDEBUG
@@ -18,6 +19,7 @@ python_exec2c_CPPFLAGS = \
 tests_python_exec2c_SOURCES = src/python-exec.c
 # TODO: create dedicated sysconfdir for tests
 tests_python_exec2c_CPPFLAGS = \
+	-DEXEEXT=\"${EXEEXT}\" \
 	-DPYTHON_SCRIPTROOT=\"tests\" \
 	-DSYSCONFDIR=\"tests/etc\" \
 	-UNDEBUG
