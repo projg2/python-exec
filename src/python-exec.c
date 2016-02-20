@@ -282,7 +282,6 @@ static void execute(char* script, char** argv)
  */
 int main(int argc, char* argv[])
 {
-	char buf[BUFFER_SIZE];
 	char scriptbuf[BUFFER_SIZE];
 	char* bufpy;
 
@@ -293,14 +292,13 @@ int main(int argc, char* argv[])
 	int pref;
 
 	size_t len;
-	char* fnpos;
+	const char* fnpos;
 	int j;
 
 
 #ifndef NDEBUG
 	/* initialize the buffers with some junk
 	 * this helps catching missing null terminators */
-	memset(buf, 'Z', sizeof(buf));
 	memset(scriptbuf, 'Z', sizeof(scriptbuf));
 #endif
 
@@ -338,19 +336,9 @@ int main(int argc, char* argv[])
 	 */
 	argv[0] = scriptbuf;
 
-	len = strlen(script);
-	/* length + null terminator */
-	if (len + 1 > BUFFER_SIZE)
-	{
-		fprintf(stderr, "%s: program name longer than buffer size.\n",
-				script);
-		return 127;
-	}
-
-	memcpy(buf, script, len + 1);
-	fnpos = strrchr(buf, path_sep);
+	fnpos = strrchr(script, path_sep);
 	if (!fnpos)
-		fnpos = buf;
+		fnpos = script;
 	else
 		++fnpos;
 
