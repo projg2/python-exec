@@ -378,8 +378,10 @@ static int try_preference_from_file(const char* path, int pref)
 /**
  * Load configuration files and set implementation preferences
  * accordingly.
+ *
+ * @scriptname The script basename (used for config overrides).
  */
-static void load_configuration()
+static void load_configuration(const char* scriptname)
 {
 	/**
 	 * The implementation check order:
@@ -397,6 +399,9 @@ static void load_configuration()
 	int curr_pref = 0;
 	const char* epython;
 
+	char configbuf[BUFFER_SIZE];
+	char* configbuf_fn_pos;
+
 	epython = getenv("EPYTHON");
 	if (epython)
 	{
@@ -405,6 +410,25 @@ static void load_configuration()
 		else
 			fprintf(stderr, "python-exec: EPYTHON value invalid (%s).\n",
 					epython);
+	}
+
+	/* common prefix */
+	/* two sizeof()s == 2 null terminators, we need only one so -1 */
+	if (sizeof(SYSCONFDIR "/python-exec/") + sizeof(".conf") - 1
+			+ strlen(scriptname) > sizeof(configbuf))
+	{
+		fprintf(stderr, "python-exec: configuration path longer than the buffer ("
+				SYSCONFDIR "/python-exec/%s.conf), overrides will be ignored.\n",
+				scriptname);
+	}
+	else
+	{
+		strcpy(configbuf, SYSCONFDIR "/python-exec/");
+		strcat(configbuf, scriptname);
+		strcat(configbuf, ".conf");
+
+		if (try_preferences_from_config(configbuf, curr_pref))
+			return;
 	}
 
 	if (!try_preferences_from_config(
@@ -493,8 +517,6 @@ int main(int argc, char* argv[])
 	else /* otherwise, use argv[0] */
 		script = argv[0];
 
-	load_configuration();
-
 	/* put the always-common part in */
 	memcpy(scriptbuf, python_scriptroot, sizeof(python_scriptroot));
 	bufpy = &scriptbuf[sizeof(python_scriptroot) - 1];
@@ -528,6 +550,8 @@ int main(int argc, char* argv[])
 				fnpos);
 		return 127;
 	}
+
+	load_configuration(fnpos);
 
 	/* Try j = 0..max-with-any-matches, then IMPL_DEFAULT */
 	j = 0;

@@ -29,7 +29,7 @@ tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
 	tests/python-exec2 tests/python-exec2c \
-	tests/etc/python-exec/python-exec.conf \
+	tests/etc/python-exec/*.conf \
 	tests/*.tmp* tests/*/*.tmp* \
 	tests/python tests/*/python
 
@@ -65,7 +65,8 @@ TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/long-path-test tests/c-symlink-test \
 	tests/disable-test tests/epython-disable-test \
 	tests/order-disable-test tests/python-argv0-test \
-	tests/wrapper-copy-test tests/pythonwrap-copy-test
+	tests/wrapper-copy-test tests/pythonwrap-copy-test \
+	tests/config-script-override-test
 XFAIL_TESTS = tests/long-path-test tests/disable-test
 
 if HAVE_READLINK

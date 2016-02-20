@@ -1,0 +1,40 @@
+#!/bin/sh
+
+echo "${TEST_NAME} -- test whether <script-name>.conf override is respected"
+
+set -- ${PYTHON_IMPLS}
+
+unset ESELECT OTHER
+while true; do
+	if [ ${#} -lt 2 ]; then
+		# we can't test a preference without at least two impls ;)
+		echo 'Best Python eselected, unable to perform test.' >&2
+		do_exit 77
+	fi
+
+	# Repeat until we find the eselected python.
+	if [ -z "${ESELECT}" ] && is_preferred "${1}"; then
+		ESELECT="${1}"
+		if [ -n "${OTHER}" ]; then
+			break
+		fi
+	elif [ -z "${OTHER}" ]; then
+		OTHER=${1}
+		if [ -n "${ESELECT}" ]; then
+			break
+		fi
+	fi
+	shift
+done
+
+echo "default preferred impl: ${ESELECT}" >&2
+echo "other impl: ${OTHER}" >&2
+
+unset EPYTHON
+
+echo "${OTHER}" > "${TEST_DIR}/etc/python-exec/${TEST_TMP}.conf"
+
+write_impl "${ESELECT}" "#!/usr/bin/env false"
+write_impl "${OTHER}"  "#!/usr/bin/env true"
+
+do_test "${TEST_TMP}"
