@@ -62,6 +62,157 @@ static const char* find_basename(const char* path)
 		return path;
 }
 
+#ifdef HAVE_READLINK
+/**
+ * Resolve symlinks up to the final symlink to python-exec2.
+ *
+ * @buf Output buffer to store the resulting path in.
+ * Must be of BUFFER_SIZE length.
+ *
+ * @path Path to the initial executable (symlink).
+ *
+ * Returns 1 on success, 0 on failure.
+ */
+int resolve_symlinks(char* outbuf, const char* path)
+{
+	char second_buf[BUFFER_SIZE];
+	int bufno = 0;
+
+#ifndef NDEBUG
+	/* initialize the buffer with some junk
+	 * this helps catching missing null terminators */
+	memset(second_buf, 'Z', sizeof(second_buf));
+#endif
+
+	/* We use two buffer interchangeably to resolve symlinks until we
+	 * reach EINVAL (non-symlink). We consider two cases:
+	 *
+	 * a. final executable is named python-exec2, then we use the final
+	 *    symlink to it,
+	 *
+	 * b. final executable is named otherwise, then we assume
+	 *    python-exec was copied rather than symlinked and use that.
+	 *
+	 * For each symlink resolution step:
+	 *
+	 * 1. buf contains target(i-1),
+	 *
+	 * 2. buf2 contains target(i),
+	 *
+	 * 3. buf = readlink(target(i)).
+	 *
+	 * 3a. if readlink() succeeds, target(i-1) is irrelevant and buf
+	 *     gets target(i+1), we exchange buffers and continue,
+	 *
+	 * 3b. if readlink() fails, buf is not overwritten and target(i-1)
+	 *     is still there.
+	 */
+
+	/* path + '\0' */
+	if (strlen(path) + 1 > BUFFER_SIZE)
+	{
+		fprintf(stderr, "%s: path longer than buffer size.\n",
+				path);
+		return 0;
+	}
+
+	strcpy(outbuf, path);
+	/* pre-set to null in case someone tried to run python-exec2 */
+	second_buf[0] = '\0';
+
+	while (1)
+	{
+		/* buffer containing the current symlink to resolve */
+		char* curr_path = bufno ? second_buf : outbuf;
+		/* buffer for result (containing previous path) */
+		char* res_path = bufno ? outbuf : second_buf;
+
+		/* find basename offset in curr_path */
+		const char* curr_fnpos = find_basename(curr_path);
+		size_t fnoff = curr_fnpos - curr_path;
+		/* set to basename position of curr_path in res_path,
+		 * so that we can copy directory path straight if we get
+		 * a relative symlink */
+		char* fnpos = &res_path[fnoff];
+		/* free space in the buffer */
+		ssize_t max_length = BUFFER_SIZE - fnoff;
+
+		/* Note: we pass max_length even though we need one byte
+		 * for null terminator -- this way, we can check if path was
+		 * not truncated by readlink() */
+		ssize_t ret = readlink(curr_path, fnpos, max_length);
+
+		if (ret == -1)
+		{
+			if (errno == EINVAL)
+			{
+				const char* res;
+
+				/* ok, curr_path was the last symlink;
+				 * now let's see if it's python-exec2 */
+				if (!strcmp(curr_fnpos, "python-exec2")
+						|| !strcmp(curr_fnpos, "python-exec2c" EXEEXT))
+				{
+					/* let's see if we succeeded at least once */
+					if (!res_path[0])
+					{
+						fprintf(stderr, "%s: python-exec2 is a wrapper, "
+								"it must not be run directly.\n",
+								curr_path);
+						return 0;
+					}
+
+					/* curr_path is python-exec, so let's use last path
+					 * that is still in res_path (since readlink()
+					 * failed) */
+					res = res_path;
+				}
+				else
+				{
+					/* curr_path is not python-exec, so it's probably
+					 * a copy of python-exec, so let's use it. */
+					res = curr_path;
+				}
+
+				/* copy result to outbuf if it happened to be
+				 * in the other buffer */
+				if (outbuf != res)
+					strcpy(outbuf, res);
+
+				break;
+			}
+			else
+			{
+				fprintf(stderr, "%s: unable to resolve symlink %s: %s.\n",
+						path, curr_path, strerror(errno));
+				return 0;
+			}
+		}
+		else if (ret == max_length)
+		{
+			fprintf(stderr, "%s: symlink %s target longer than buffer size.\n",
+					path, curr_path);
+			return 0;
+		}
+
+		/* add a null terminator */
+		fnpos[ret] = '\0';
+
+		/* now, if we got an absolute path, then move it to front;
+		 * otherwise, copy base path from curr_path */
+		if (*fnpos == '/')
+			memmove(res_path, fnpos, ret+1);
+		else
+			memcpy(res_path, curr_path, fnoff);
+
+		/* exchange buffers */
+		bufno = !bufno;
+	}
+
+	return 1;
+}
+#endif
+
 /**
  * Set path in scriptbuf for given impl.
  *
@@ -299,6 +450,9 @@ static void execute(char* script, char** argv)
 int main(int argc, char* argv[])
 {
 	char scriptbuf[BUFFER_SIZE];
+#ifdef HAVE_READLINK
+	char fnbuf[BUFFER_SIZE];
+#endif
 	char* bufpy;
 
 	const char* slash;
@@ -316,6 +470,9 @@ int main(int argc, char* argv[])
 	/* initialize the buffers with some junk
 	 * this helps catching missing null terminators */
 	memset(scriptbuf, 'Z', sizeof(scriptbuf));
+#	ifdef HAVE_READLINK
+	memset(fnbuf, 'Z', sizeof(fnbuf));
+#	endif
 #endif
 
 	/* figure out basename from argv[0] */
@@ -352,7 +509,15 @@ int main(int argc, char* argv[])
 	 */
 	argv[0] = scriptbuf;
 
+#ifdef HAVE_READLINK
+	/* perform symlink resolution */
+	if (!resolve_symlinks(fnbuf, script))
+		return 127;
+
+	fnpos = find_basename(fnbuf);
+#else
 	fnpos = find_basename(script);
+#endif
 
 	/* scriptroot + '/' + EPYTHON + '/' + basename + '\0' */
 	/* (but sizeof() gives [scriptroot + '/' + '\0']) */

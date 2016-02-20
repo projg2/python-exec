@@ -66,7 +66,7 @@ TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/order-disable-test tests/python-argv0-test
 XFAIL_TESTS = tests/long-path-test tests/disable-test
 
-if FALSE
+if HAVE_READLINK
 TESTS += \
 	tests/symlink-test tests/abs-symlink-test \
 	tests/deep-symlink-test tests/pythonwrap-symlink-test \
