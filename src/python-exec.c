@@ -214,23 +214,6 @@ int resolve_symlinks(char* outbuf, const char* path)
 #endif
 
 /**
- * Set path in scriptbuf for given impl.
- *
- * @bufp points to the buffer.
- *
- * @impl holds the implementation name.
- *
- * @progname contains the program basename.
- */
- static void set_scriptbuf(char* bufp, const char* impl,
-		const char* progname)
-{
-	strcpy(bufp, impl);
-	strcat(bufp, "/");
-	strcat(bufp, progname);
-}
-
-/**
  * Set preference for implementation, if it is not set already.
  *
  * @impl Implementation to set preference for.
@@ -565,7 +548,9 @@ int main(int argc, char* argv[])
 				continue;
 			found_any = 1;
 
-			set_scriptbuf(bufpy, i->name, fnpos);
+			strcpy(bufpy, i->name);
+			strcat(bufpy, "/");
+			strcat(bufpy, fnpos);
 			execute(scriptbuf, argv);
 		}
 
