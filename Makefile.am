@@ -63,7 +63,8 @@ TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/pythonwrap-test tests/pythonwrap-__file__-test \
 	tests/long-path-test tests/c-symlink-test \
 	tests/disable-test tests/epython-disable-test \
-	tests/order-disable-test tests/python-argv0-test
+	tests/order-disable-test tests/python-argv0-test \
+	tests/wrapper-copy-test tests/pythonwrap-copy-test
 XFAIL_TESTS = tests/long-path-test tests/disable-test
 
 if HAVE_READLINK
