@@ -68,7 +68,7 @@ XFAIL_TESTS = tests/long-path-test tests/disable-test
 
 if HAVE_READLINK
 TESTS += \
-	tests/symlink-test tests/abs-symlink-test tests/symlink-pref-test \
+	tests/symlink-test tests/abs-symlink-test \
 	tests/deep-symlink-test tests/pythonwrap-symlink-test \
 	tests/pythonwrap-abs-symlink-test tests/pythonwrap-deep-symlink-test \
 	tests/long-symlink-test tests/deep-long-symlink-test
