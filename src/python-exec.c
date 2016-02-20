@@ -47,6 +47,22 @@ struct python_impl python_impls[] = {
 };
 
 /**
+ * Find basename component in path.
+ *
+ * @path The path.
+ *
+ * Returns pointer to the basename component.
+ */
+static const char* find_basename(const char* path)
+{
+	const char* fnpos = strrchr(path, path_sep);
+	if (fnpos)
+		return &fnpos[1];
+	else
+		return path;
+}
+
+/**
  * Set path in scriptbuf for given impl.
  *
  * @bufp points to the buffer.
@@ -336,11 +352,7 @@ int main(int argc, char* argv[])
 	 */
 	argv[0] = scriptbuf;
 
-	fnpos = strrchr(script, path_sep);
-	if (!fnpos)
-		fnpos = script;
-	else
-		++fnpos;
+	fnpos = find_basename(script);
 
 	/* scriptroot + '/' + EPYTHON + '/' + basename + '\0' */
 	/* (but sizeof() gives [scriptroot + '/' + '\0']) */
