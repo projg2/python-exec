@@ -9,6 +9,12 @@
 # You are most likely looking for one of those.
 
 from __future__ import with_statement
+
+# prepare a clean globals for exec()
+new_globals = dict(globals())
+# we have to keep the import top, so delete it from globals
+del new_globals['with_statement']
+
 import errno, os, os.path, sys
 
 try:
@@ -40,18 +46,15 @@ while True:
 					sys.exit(127)
 
 				target = prev_target
-			sys.argv[0] = target
-			del prev_target, target
 			break
 		else:
 			raise
 	else:
 		prev_target = target
 		target = next_target
-		del next_target
 
-__file__ = os.path.join('@PYTHON_SCRIPTROOT@', EPYTHON,
-		os.path.basename(sys.argv[0]))
+target = os.path.join('@PYTHON_SCRIPTROOT@', EPYTHON,
+		os.path.basename(target))
 
 data = None
 while data is None:
@@ -61,10 +64,10 @@ while data is None:
 			import tokenize
 
 			# need to provide encoding
-			with open(__file__, 'rb') as f:
+			with open(target, 'rb') as f:
 				kwargs['encoding'] = tokenize.detect_encoding(f.readline)[0]
 
-		with open(__file__, 'r', **kwargs) as f:
+		with open(target, 'r', **kwargs) as f:
 			data = f.read()
 	except IOError as e:
 		if e.errno == errno.EINTR:
@@ -77,5 +80,7 @@ while data is None:
 		else:
 			raise
 
-sys.argv[0] = __file__
-exec(data)
+sys.argv[0] = target
+new_globals['__file__'] = target
+
+exec(data, new_globals)
