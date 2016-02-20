@@ -18,14 +18,11 @@ except ImportError:
 	if '@exeext@' and EPYTHON.endswith('@exeext@'):
 		EPYTHON = EPYTHON[:-len('@exeext@')]
 
-# In the loop:
-# sys.argv[0] keeps the 'bare' name
-# __file__ keeps the 'full' name
+__file__ = os.path.join('@PYTHON_SCRIPTROOT@', EPYTHON,
+		os.path.basename(sys.argv[0]))
 
-while True:
-	__file__ = os.path.join('@PYTHON_SCRIPTROOT@', EPYTHON,
-			os.path.basename(sys.argv[0]))
-
+data = None
+while data is None:
 	try:
 		kwargs = {}
 		if sys.version_info[0] >= 3:
@@ -41,22 +38,12 @@ while True:
 		if e.errno == errno.EINTR:
 			# retry
 			continue
-		elif e.errno != errno.ENOENT:
+		elif e.errno == errno.ENOENT:
+			sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
+					% EPYTHON)
+			sys.exit(127)
+		else:
 			raise
-	else:
-		break
-
-	# follow symlinks (if supported)
-	try:
-		sys.argv[0] = os.path.join(os.path.dirname(sys.argv[0]),
-				os.readlink(sys.argv[0]))
-	except (OSError, AttributeError) as e:
-		if isinstance(e, OSError) and e.errno != errno.EINVAL:
-			raise
-		# no more symlinks? then it's time to fail.
-		sys.stderr.write('This Python implementation (%s) is not supported by the script.\n'
-				% EPYTHON)
-		sys.exit(127)
 
 sys.argv[0] = __file__
 exec(data)

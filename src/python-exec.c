@@ -252,73 +252,6 @@ static void load_configuration()
 	}
 }
 
-#ifdef HAVE_READLINK
-
-/**
- * Try to read a symlink target.
- *
- * @bufp points to the space in the buffer where the target shall be
- * written.
- *
- * @path contains the symlink path.
- *
- * @max_len specifies the maximum value length. The buffer must have
- * at least one byte more for the null terminator.
- *
- * Returns 1 on success, 0 otherwise.
- */
-static int try_symlink(char* bufp, const char* path, size_t max_len)
-{
-	size_t rd;
-
-	errno = 0;
-	/* 1 for the null terminator with max length */
-	rd = readlink(path, bufp, max_len + 1);
-
-	/* [max_len] could mean that the name is too long */
-	if (rd > 0 && rd < max_len + 1)
-	{
-		bufp[rd] = 0;
-		return 1;
-	}
-
-	return 0;
-}
-
-#endif
-
-#ifdef HAVE_READLINK
-
-/**
- * Obtain symlink length. Assumes that symlinks don't change during
- * the process.
- *
- * @path contains the path to the symlink.
- *
- * Returns the symlink length or 0 if the file is not a symlink.
- */
-static size_t get_symlink_length(const char* path)
-{
-	struct stat st;
-
-	errno = 0;
-	if (!lstat(path, &st) && S_ISLNK(st.st_mode))
-	{
-		/* how are we supposed to read that? */
-		if (st.st_size > SSIZE_MAX)
-		{
-			errno = EINVAL;
-			return 0;
-		}
-
-		return st.st_size;
-	}
-
-	return 0;
-}
-
-#endif
-
 /**
  * Run the specified script using execvp().
  *
@@ -355,10 +288,14 @@ int main(int argc, char* argv[])
 
 	const char* slash;
 	const char* script;
-	int symlink_resolution = 0;
 
 	const struct python_impl* i;
 	int pref;
+
+	size_t len;
+	char* fnpos;
+	int j;
+
 
 #ifndef NDEBUG
 	/* initialize the buffers with some junk
@@ -401,121 +338,54 @@ int main(int argc, char* argv[])
 	 */
 	argv[0] = scriptbuf;
 
+	len = strlen(script);
+	/* length + null terminator */
+	if (len + 1 > BUFFER_SIZE)
+	{
+		fprintf(stderr, "%s: program name longer than buffer size.\n",
+				script);
+		return 127;
+	}
+
+	memcpy(buf, script, len + 1);
+	fnpos = strrchr(buf, path_sep);
+	if (!fnpos)
+		fnpos = buf;
+	else
+		++fnpos;
+
+	/* scriptroot + '/' + EPYTHON + '/' + basename + '\0' */
+	/* (but sizeof() gives [scriptroot + '/' + '\0']) */
+	len = sizeof(python_scriptroot) + max_epython_len + strlen(fnpos) + 1;
+	if (len >= BUFFER_SIZE)
+	{
+		fprintf(stderr, "%s: program name longer than buffer size.\n",
+				fnpos);
+		return 127;
+	}
+
+	/* Try j = 0..max-with-any-matches, then IMPL_DEFAULT */
+	j = 0;
 	while (1)
 	{
-		size_t len;
-		char* fnpos;
-		int j;
+		int found_any = 0;
 
-		if (!symlink_resolution)
-			len = strlen(script);
-#ifdef HAVE_READLINK
+		for (i = python_impls; i->name; ++i)
+		{
+			if (i->preference != j)
+				continue;
+			found_any = 1;
+
+			set_scriptbuf(bufpy, i->name, fnpos);
+			execute(scriptbuf, argv);
+		}
+
+		if (j == IMPL_DEFAULT)
+			break;
+		else if (!found_any)
+			j = IMPL_DEFAULT;
 		else
-		{
-			size_t sym_len = get_symlink_length(buf);
-
-			if (!sym_len)
-			{
-				if (errno != 0)
-					fprintf(stderr, "%s: unable to stat symlink at %s: %s\n",
-							script, buf, strerror(errno));
-				else /* no more symlinks to try */
-					fprintf(stderr, "%s: no supported Python implementation variant found!\n",
-							script);
-				break;
-			}
-
-			fnpos = strrchr(buf, path_sep);
-			if (fnpos)
-				len = &fnpos[1] - buf;
-			else
-				len = 0;
-
-			len += sym_len;
-		}
-#endif
-
-		/* length + null terminator */
-		if (len + 1 > BUFFER_SIZE)
-		{
-			fprintf(stderr, "%s: program name longer than buffer size.\n",
-					script);
-			return 127;
-		}
-
-		if (!symlink_resolution)
-			memcpy(buf, script, len + 1);
-#ifdef HAVE_READLINK
-		else
-		{
-			/**
-			 * In order to support relative symlinks, preserve
-			 * the current directory (but strip filename).
-			 */
-			if (!fnpos)
-				fnpos = buf;
-			else
-				++fnpos;
-
-			if (!try_symlink(fnpos, buf, len))
-			{
-				fprintf(stderr, "%s: unable to read symlink at %s: %s.\n",
-						script, buf,
-						errno != 0 ? strerror(errno) : "target length changed");
-				break;
-			}
-
-			/* Symlink is absolute, move the path. */
-			if (*fnpos == path_sep && fnpos != buf)
-				memmove(buf, fnpos, strlen(fnpos) + 1);
-		}
-#endif
-
-		fnpos = strrchr(buf, path_sep);
-		if (!fnpos)
-			fnpos = buf;
-		else
-			++fnpos;
-
-		/* scriptroot + '/' + EPYTHON + '/' + basename + '\0' */
-		/* (but sizeof() gives [scriptroot + '/' + '\0']) */
-		len = sizeof(python_scriptroot) + max_epython_len + strlen(fnpos) + 1;
-		if (len >= BUFFER_SIZE)
-		{
-			fprintf(stderr, "%s: program name longer than buffer size.\n",
-					fnpos);
-			return 127;
-		}
-
-		/* Try j = 0..max-with-any-matches, then IMPL_DEFAULT */
-		j = 0;
-		while (1)
-		{
-			int found_any = 0;
-
-			for (i = python_impls; i->name; ++i)
-			{
-				if (i->preference != j)
-					continue;
-				found_any = 1;
-
-				set_scriptbuf(bufpy, i->name, fnpos);
-				execute(scriptbuf, argv);
-			}
-
-			if (j == IMPL_DEFAULT)
-				break;
-			else if (!found_any)
-				j = IMPL_DEFAULT;
-			else
-				++j;
-		}
-
-#ifdef HAVE_READLINK
-		symlink_resolution = 1;
-#else
-		break;
-#endif
+			++j;
 	}
 
 	/* If no execvp() succeeded, that means we either don't have
