@@ -364,7 +364,7 @@ int main(int argc, char* argv[])
 	/* initialize the buffers with some junk
 	 * this helps catching missing null terminators */
 	memset(buf, 'Z', sizeof(buf));
-	memset(scriptbuf, 'Z', sizeof(buf));
+	memset(scriptbuf, 'Z', sizeof(scriptbuf));
 #endif
 
 	/* figure out basename from argv[0] */
