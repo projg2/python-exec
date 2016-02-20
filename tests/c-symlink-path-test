@@ -1,0 +1,28 @@
+#!/bin/sh
+
+echo "${TEST_NAME} -- test whether python-exec2c symlinks work via PATH"
+
+set -- ${PYTHON_IMPLS}
+
+if [ ${#} -lt 1 ]; then
+	echo 'No Python implementation supported (?!)' >&2
+	do_exit 77
+fi
+
+export EPYTHON=${1}
+
+write_impl "${EPYTHON}" "#!/bin/sh\nexit 0"
+
+echo "EPYTHON: ${EPYTHON}" >&2
+
+# replace with C wrapper
+rm "${TEST_DIR}/${TEST_TMP}"
+ln -s python-exec2c "${TEST_DIR}/${TEST_TMP}"
+
+set +e
+echo "Test command: PATH=${TEST_DIR} ${TEST_TMP}" >&2
+
+PATH=${TEST_DIR} "${TEST_TMP}"
+ret=${?}
+echo "Test result: ${ret}" >&2
+do_exit ${ret}
