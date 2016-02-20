@@ -7,7 +7,7 @@ scriptroot_SCRIPTS = python-exec2
 
 check_DATA = tests/etc/python-exec/python-exec.conf
 check_PROGRAMS = tests/print-bufsiz tests/python-exec2c
-check_SCRIPTS = tests/python-exec
+check_SCRIPTS = tests/python-exec2
 
 python_exec2c_SOURCES = src/python-exec.c
 python_exec2c_CPPFLAGS = \
@@ -28,7 +28,7 @@ tests_print_bufsiz_SOURCES = src/print-bufsiz.c
 
 EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
-	tests/python-exec tests/python-exec2c \
+	tests/python-exec2 tests/python-exec2c \
 	tests/etc/python-exec/python-exec.conf \
 	tests/*.tmp* tests/*/*.tmp* \
 	tests/python tests/*/python
@@ -48,7 +48,7 @@ tests/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec: src/python-exec.in config.status
+tests/python-exec2: src/python-exec.in config.status
 	$(MKDIR_P) tests
 	rm -f $@ $@.tmp
 	@SED@ -e "s|[@]bindir@|./tests|" \
