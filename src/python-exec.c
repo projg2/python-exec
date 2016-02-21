@@ -603,8 +603,9 @@ int main(int argc, char* argv[])
 "For more information, please see the included README file.\n"
 "\n"
 "Additional options:\n"
-"  --help, -h         print this help message\n"
-"  --version, -V      print the package name and version\n"
+"  --help, -h                   print this help message\n"
+"  --list-implementations, -l   list supported implementations\n"
+"  --version, -V                print the package name and version\n"
 					"", argv[0]);
 			return EXIT_SUCCESS;
 		}
