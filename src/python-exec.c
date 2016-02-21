@@ -29,6 +29,7 @@ const char python_scriptroot[] = PYTHON_SCRIPTROOT "/";
 const size_t max_epython_len = MAX_EPYTHON_LEN;
 
 const char path_sep = '/';
+const char sys_path_sep = ':';
 
 enum python_impl_preference
 {
@@ -77,6 +78,11 @@ int resolve_symlinks(char* outbuf, const char* path)
 {
 	char second_buf[BUFFER_SIZE];
 	int bufno = 0;
+	size_t orig_path_len;
+
+	int need_path_lookup = 0;
+	const char* sys_path;
+	const char* path_it;
 
 #ifndef NDEBUG
 	/* initialize the buffer with some junk
@@ -108,15 +114,38 @@ int resolve_symlinks(char* outbuf, const char* path)
 	 *     is still there.
 	 */
 
-	/* path + '\0' */
-	if (strlen(path) + 1 > BUFFER_SIZE)
+	/* Now, this kinda sucks but if we're symlinked directly to the C
+	 * wrapper, argv[0] may not contain any path. We need to do PATH
+	 * lookup in this case.
+	 */
+
+	orig_path_len = strlen(path);
+
+	/* if executable has any path, we're good */
+	if (strchr(path, path_sep))
 	{
-		fprintf(stderr, "%s: path longer than buffer size.\n",
-				path);
-		return 0;
+		/* path + '\0' */
+		if (orig_path_len + 1 > BUFFER_SIZE)
+		{
+			fprintf(stderr, "%s: path longer than buffer size.\n",
+					path);
+			return 0;
+		}
+
+		strcpy(outbuf, path);
+	}
+	else
+	{
+		need_path_lookup = 1;
+
+		sys_path = getenv("PATH");
+		/* mimic exec*p() behavior */
+		if (!sys_path)
+			sys_path = "";
+
+		path_it = 0;
 	}
 
-	strcpy(outbuf, path);
 	/* pre-set to null in case someone tried to run python-exec2 */
 	second_buf[0] = '\0';
 
@@ -126,6 +155,53 @@ int resolve_symlinks(char* outbuf, const char* path)
 		char* curr_path = bufno ? second_buf : outbuf;
 		/* buffer for result (containing previous path) */
 		char* res_path = bufno ? outbuf : second_buf;
+
+		if (need_path_lookup)
+		{
+			const char* sep_pos;
+			size_t dir_len;
+
+			if (!path_it)
+				path_it = sys_path;
+			else if (path_it[0] == '\0')
+			{
+				fprintf(stderr, "%s: unable to find executable in PATH.\n",
+						path);
+				return 0;
+			}
+			else /* it's on separator then */
+				++path_it;
+
+			/* find next separator or end-of-string */
+			sep_pos = strchr(path_it, sys_path_sep);
+			if (!sep_pos)
+				sep_pos = path_it + strlen(path_it);
+			dir_len = sep_pos - path_it;
+
+			/* dir '/' executable '\0' */
+			if (dir_len + orig_path_len + 2 > BUFFER_SIZE)
+			{
+				fprintf(stderr, "%s: system PATH component longer than buffer size.\n",
+						path);
+				return 0;
+			}
+
+			/* empty component works as current directory */
+			if (dir_len == 0)
+				outbuf[0] = '\0';
+			else
+			{
+				strncpy(outbuf, path_it, dir_len);
+				outbuf[dir_len] = path_sep;
+				outbuf[dir_len+1] = '\0';
+			}
+			strcat(outbuf, path);
+
+			/* TODO: we should probably verify if it's executable... */
+
+			/* set path_it for the next iteration */
+			path_it = sep_pos;
+		}
 
 		/* find basename offset in curr_path */
 		const char* curr_fnpos = find_basename(curr_path);
@@ -144,7 +220,11 @@ int resolve_symlinks(char* outbuf, const char* path)
 
 		if (ret == -1)
 		{
-			if (errno == EINVAL)
+			/* if we're doing PATH lookup, skip failing entry and try
+			 * next PATH */
+			if (need_path_lookup && errno == ENOENT)
+				continue;
+			else if (errno == EINVAL)
 			{
 				const char* res;
 
@@ -194,6 +274,9 @@ int resolve_symlinks(char* outbuf, const char* path)
 					path, curr_path);
 			return 0;
 		}
+
+		/* disable PATH lookup if readlink() succeeded */
+		need_path_lookup = 0;
 
 		/* add a null terminator */
 		fnpos[ret] = '\0';
