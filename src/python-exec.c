@@ -197,10 +197,26 @@ int resolve_symlinks(char* outbuf, const char* path)
 			}
 			strcat(outbuf, path);
 
-			/* TODO: we should probably verify if it's executable... */
-
 			/* set path_it for the next iteration */
 			path_it = sep_pos;
+
+			/* verify if it's executable, so we don't wind up in dead
+			 * end resolving the wrong path */
+			if (access(outbuf, X_OK) == -1)
+			{
+				/* EACCES -- not executable
+				 * ENOENT -- dangling symlink
+				 * ENOTDIR -- invalid symlink target
+				 */
+				if (errno == EACCES || errno == ENOENT || errno == ENOTDIR)
+					continue;
+				else
+				{
+					fprintf(stderr, "%s: unable to test executable %s: %s.\n",
+							path, curr_path, strerror(errno));
+					return 0;
+				}
+			}
 		}
 
 		/* find basename offset in curr_path */
