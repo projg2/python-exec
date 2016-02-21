@@ -608,6 +608,15 @@ int main(int argc, char* argv[])
 					"", argv[0]);
 			return EXIT_SUCCESS;
 		}
+		else if (!strcmp(script, "--list-implementations")
+				|| !strcmp(script, "-l"))
+		{
+			for (i = python_impls; i->name; ++i)
+			{
+				fprintf(stderr, "%s\n", i->name);
+			}
+			return EXIT_SUCCESS;
+		}
 		else if (!strcmp(script, "--version") || !strcmp(script, "-V"))
 		{
 			fprintf(stderr, PACKAGE_STRING "\n");
