@@ -588,10 +588,30 @@ int main(int argc, char* argv[])
 	if (!strcmp(slash ? &slash[1] : argv[0], "python-exec2c" EXEEXT))
 	{
 		script = argv[1];
+
 		if (!script || !script[0])
 		{
 			fprintf(stderr, "Usage: %s <script>\n", argv[0]);
 			return EXIT_FAILURE;
+		}
+		else if (!strcmp(script, "--help") || !strcmp(script, "-h"))
+		{
+			fprintf(stderr, "Usage: %s <script>\n"
+"\n"
+"python-exec is a wrapper to run Python scripts in an environment\n"
+"supporting parallel install of multiple Python implementations.\n"
+"For more information, please see the included README file.\n"
+"\n"
+"Additional options:\n"
+"  --help, -h         print this help message\n"
+"  --version, -V      print the package name and version\n"
+					"", argv[0]);
+			return EXIT_SUCCESS;
+		}
+		else if (!strcmp(script, "--version") || !strcmp(script, "-V"))
+		{
+			fprintf(stderr, PACKAGE_STRING "\n");
+			return EXIT_SUCCESS;
 		}
 
 		++argv;
