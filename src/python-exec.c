@@ -596,7 +596,7 @@ int main(int argc, char* argv[])
 		}
 		else if (!strcmp(script, "--help") || !strcmp(script, "-h"))
 		{
-			fprintf(stderr, "Usage: %s <script>\n"
+			fprintf(stdout, "Usage: %s <script>\n"
 "\n"
 "python-exec is a wrapper to run Python scripts in an environment\n"
 "supporting parallel install of multiple Python implementations.\n"
@@ -614,13 +614,13 @@ int main(int argc, char* argv[])
 		{
 			for (i = python_impls; i->name; ++i)
 			{
-				fprintf(stderr, "%s\n", i->name);
+				fprintf(stdout, "%s\n", i->name);
 			}
 			return EXIT_SUCCESS;
 		}
 		else if (!strcmp(script, "--version") || !strcmp(script, "-V"))
 		{
-			fprintf(stderr, PACKAGE_STRING "\n");
+			fprintf(stdout, PACKAGE_STRING "\n");
 			return EXIT_SUCCESS;
 		}
 
