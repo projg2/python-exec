@@ -4,10 +4,18 @@ echo "${TEST_NAME} -- test whether Python wrapper works when copied (instead of 
 
 set -- ${PYTHON_IMPLS}
 
-if [ ${#} -lt 1 ]; then
-	echo 'No Python implementation supported (?!)' >&2
-	do_exit 77
-fi
+while true; do
+	if [ ${#} -lt 1 ]; then
+		echo 'No Python implementation installed (?!)' >&2
+		do_exit 77
+	fi
+
+	# we have to have the proper Python version installed
+	if "${1}" --version >&2; then
+		break
+	fi
+	shift
+done
 
 export EPYTHON=${1}
 
