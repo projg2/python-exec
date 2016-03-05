@@ -39,7 +39,7 @@ do_test() {
 		set -- "${TEST_DIR}/${1}"
 	fi
 
-	set +e
+	set +e +x
 	echo "Test command: ${@}" >&2
 
 	"${@}"
@@ -49,7 +49,7 @@ do_test() {
 }
 
 is_preferred() {
-	set +e
+	set +e +x
 
 	while read l; do
 		case "${l}" in
@@ -62,12 +62,12 @@ is_preferred() {
 		esac
 	done <tests/etc/python-exec/python-exec.conf
 
-	set -e
+	set -e -x
 	return 1
 }
 
 is_disabled() {
-	set +e
+	set +e +x
 
 	while read l; do
 		case "${l}" in
@@ -80,13 +80,13 @@ is_disabled() {
 		esac
 	done <tests/etc/python-exec/python-exec.conf
 
-	set -e
+	set -e -x
 	return 1
 }
 
 # catch all failures
 trap 'exit 99' EXIT
-set -e
+set -e -x
 
 rm -f "${TEST_DIR}/${TEST_TMP}"* "${TEST_DIR}"/*/"${TEST_TMP}"*
 ln -s python-exec2 "${TEST_DIR}/${TEST_TMP}"
