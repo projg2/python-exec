@@ -18,14 +18,14 @@ while true; do
 	fi
 done
 
-MY_PYTHON=${1}
+export EPYTHON=${1}
 
-echo "Python used: ${MY_PYTHON}" >&2
+echo "Python used: ${EPYTHON}" >&2
 
-PYTHON_PATH=$(command -v "${MY_PYTHON}")
+PYTHON_PATH=$(command -v "${EPYTHON}")
 
-mkdir -p "${TEST_DIR}/${MY_PYTHON}"
-ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${MY_PYTHON}/python"
+mkdir -p "${TEST_DIR}/${EPYTHON}"
+ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${EPYTHON}/python"
 
 # replace with C wrapper
 ln -f -s python-exec2c "${TEST_DIR}/python"
