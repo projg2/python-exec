@@ -247,6 +247,7 @@ int resolve_symlinks(char* outbuf, const char* path)
 				/* ok, curr_path was the last symlink;
 				 * now let's see if it's python-exec2 */
 				if (!strcmp(curr_fnpos, "python-exec2")
+						|| !strcmp(curr_fnpos, "python-exec2c")
 						|| !strcmp(curr_fnpos, "python-exec2c" EXEEXT))
 				{
 					/* let's see if we succeeded at least once */
@@ -585,7 +586,8 @@ int main(int argc, char* argv[])
 	slash = strrchr(argv[0], path_sep);
 	/* if we are called directly (via a shebang), script comes
 	 * as argv[1] */
-	if (!strcmp(slash ? &slash[1] : argv[0], "python-exec2c" EXEEXT))
+	if (!strcmp(slash ? &slash[1] : argv[0], "python-exec2c") ||
+		!strcmp(slash ? &slash[1] : argv[0], "python-exec2c" EXEEXT))
 	{
 		script = argv[1];
 
