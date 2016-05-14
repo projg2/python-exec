@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifdef HAVE_READLINK
-#	include <unistd.h>
 #	include <limits.h>
 #	include <sys/stat.h>
 #endif
