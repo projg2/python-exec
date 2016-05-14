@@ -69,14 +69,19 @@ TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/config-script-override-test
 XFAIL_TESTS = tests/long-path-test tests/disable-test
 
-if HAVE_READLINK
-TESTS += \
+SYMLINK_BASED_TESTS = \
 	tests/symlink-test tests/abs-symlink-test \
 	tests/deep-symlink-test tests/pythonwrap-symlink-test \
 	tests/pythonwrap-abs-symlink-test tests/pythonwrap-deep-symlink-test \
 	tests/long-symlink-test tests/deep-long-symlink-test
+
+if HAVE_READLINK
+TESTS += \
+	$(SYMLINK_BASED_TESTS)
 XFAIL_TESTS += \
 	tests/long-symlink-test tests/deep-long-symlink-test
+else
+EXTRA_DIST += $(SYMLINK_BASED_TESTS)
 endif
 
 EXTRA_DIST += tests/runner.sh tests/gen-config.sh $(TESTS)
