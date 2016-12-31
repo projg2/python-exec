@@ -527,7 +527,7 @@ static void load_configuration(const char* scriptname)
 }
 
 /**
- * Run the specified script using execvp().
+ * Run the specified script using execv().
  *
  * @script specifies path to the script to execute.
  *
@@ -693,7 +693,7 @@ int main(int argc, char* argv[])
 			++j;
 	}
 
-	/* If no execvp() succeeded, that means we either don't have
+	/* If no execute() succeeded, that means we either don't have
 	 * a single supported implementation here or something is seriously
 	 * broken.
 	 */
