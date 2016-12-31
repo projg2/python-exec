@@ -51,6 +51,18 @@ AC_ARG_WITH([python-scriptroot],
 	])
 AC_SUBST([scriptrootdir], [$with_python_scriptroot])
 
+default_fallback_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+AC_ARG_WITH([fallback-path],
+	[AS_HELP_STRING([--with-fallback-path=PATH], [Fallback PATH setting)])],,
+	[with_fallback_path="$default_fallback_path"])
+
+case $with_fallback_path in
+	yes) with_fallback_path="$default_fallback_path" ;;
+	no) AC_MSG_ERROR([--without-fallback-path is not allowed]) ;;
+esac
+
+AC_DEFINE_UNQUOTED([FALLBACK_PATH], ["$with_fallback_path"], [Set to fallback PATH])
+
 AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 subdir-objects parallel-tests])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
