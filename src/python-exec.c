@@ -84,6 +84,8 @@ int resolve_symlinks(char* outbuf, const char* path)
 	const char* sys_path;
 	const char* path_it;
 
+	char cs_path[BUFFER_SIZE];
+
 #ifndef NDEBUG
 	/* initialize the buffer with some junk
 	 * this helps catching missing null terminators */
@@ -141,7 +143,19 @@ int resolve_symlinks(char* outbuf, const char* path)
 		sys_path = getenv("PATH");
 		/* mimic exec*p() behavior */
 		if (!sys_path)
-			sys_path = "";
+		{
+			/* PATH=":${_CS_PATH}" */
+			size_t cs_len;
+			cs_path[0] = ':';
+			cs_path[1] = '\0';
+			cs_len = confstr(_CS_PATH, cs_path + 1, sizeof(cs_path) - 1);
+			if (cs_len > sizeof(cs_path) - 1)
+			{
+				fputs("_CS_PATH longer than buffer size.\n", stderr);
+				return 0;
+			}
+			sys_path = cs_path;
+		}
 
 		path_it = 0;
 	}
