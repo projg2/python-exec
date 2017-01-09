@@ -61,8 +61,7 @@ LOG_COMPILER = sh $(srcdir)/tests/runner.sh "$(PYTHON_IMPLS)"
 
 TESTS = tests/epython-test tests/eselect-test tests/order-test \
 	tests/pythonwrap-test tests/pythonwrap-__file__-test \
-	tests/pythonwrap-argv0-test \
-	tests/long-path-test tests/c-symlink-test tests/c-symlink-path-test \
+	tests/pythonwrap-argv0-test tests/long-path-test \
 	tests/disable-test tests/epython-disable-test \
 	tests/order-disable-test tests/python-argv0-test \
 	tests/wrapper-copy-test tests/pythonwrap-copy-test \
@@ -73,7 +72,8 @@ SYMLINK_BASED_TESTS = \
 	tests/symlink-test tests/abs-symlink-test \
 	tests/deep-symlink-test tests/pythonwrap-symlink-test \
 	tests/pythonwrap-abs-symlink-test tests/pythonwrap-deep-symlink-test \
-	tests/long-symlink-test tests/deep-long-symlink-test
+	tests/long-symlink-test tests/deep-long-symlink-test \
+	tests/c-symlink-test tests/c-symlink-path-test
 
 if HAVE_READLINK
 TESTS += \
