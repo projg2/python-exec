@@ -706,5 +706,7 @@ int main(int argc, char* argv[])
 	 * a single supported implementation here or something is seriously
 	 * broken.
 	 */
+	fprintf(stderr, "%s: no python-exec wrapped executable found in %s.\n",
+			fnpos, PYTHON_SCRIPTROOT);
 	return 127;
 }
