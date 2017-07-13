@@ -399,21 +399,29 @@ static int try_preferences_from_config(const char* path, int pref)
 			/* == pref intentional here to avoid ++pref on disabled */
 			if (impl_ret == pref)
 				++pref;
-			else if (impl_ret == IMPL_DEFAULT)
+			else if (impl_ret == IMPL_DEFAULT && isatty(fileno(stderr)))
 				fprintf(stderr, "python-exec: Invalid impl in %s: %s\n",
 						path, buf);
 		}
 
 		if (ferror(f))
-			fprintf(stderr, "python-exec: Error reading %s: %s\n",
-					path, strerror(errno));
+		{
+			int old_errno = errno;
+			if (isatty(fileno(stderr)))
+				fprintf(stderr, "python-exec: Error reading %s: %s\n",
+						path, strerror(old_errno));
+		}
 
 		fclose(f);
 		return 1;
 	}
 	else if (errno != ENOENT)
-		fprintf(stderr, "python-exec: Unable to open %s: %s\n",
-			path, strerror(errno));
+	{
+		int old_errno = errno;
+		if (isatty(fileno(stderr)))
+			fprintf(stderr, "python-exec: Unable to open %s: %s\n",
+				path, strerror(old_errno));
+	}
 
 	return 0;
 }
@@ -490,7 +498,7 @@ static void load_configuration(const char* scriptname)
 	{
 		if (set_impl_preference(epython, curr_pref) == curr_pref)
 			++curr_pref;
-		else
+		else if (isatty(fileno(stderr)))
 			fprintf(stderr, "python-exec: EPYTHON value invalid (%s).\n",
 					epython);
 	}
@@ -500,9 +508,10 @@ static void load_configuration(const char* scriptname)
 	if (sizeof(SYSCONFDIR "/python-exec/") + sizeof(".conf") - 1
 			+ strlen(scriptname) > sizeof(configbuf))
 	{
-		fprintf(stderr, "python-exec: configuration path longer than the buffer ("
-				SYSCONFDIR "/python-exec/%s.conf), overrides will be ignored.\n",
-				scriptname);
+		if (isatty(fileno(stderr)))
+			fprintf(stderr, "python-exec: configuration path longer than the buffer ("
+					SYSCONFDIR "/python-exec/%s.conf), overrides will be ignored.\n",
+					scriptname);
 	}
 	else
 	{
@@ -541,7 +550,7 @@ static void execute(char* script, char** argv)
 	execv(script, argv);
 
 	/* warn about other errors but try hard to run something */
-	if (errno != ENOENT)
+	if (errno != ENOENT && isatty(fileno(stderr)))
 		fprintf(stderr, "python-exec: Unable to execute %s: %s.\n",
 				script, strerror(errno));
 }
