@@ -140,8 +140,16 @@ int resolve_symlinks(char* outbuf, const char* path)
 
 		sys_path = getenv("PATH");
 		/* mimic exec*p() behavior */
-		if (!sys_path)
-			sys_path = FALLBACK_PATH;
+		if (!sys_path) {
+			if (strlen(FALLBACK_PATH) == 0) {
+				size_t buf_len = confstr(_CS_PATH, (char *)NULL, (size_t)0);
+				char* sys_path = malloc(buf_len);
+				confstr(_CS_PATH, sys_path, buf_len);
+			}
+			else {
+				sys_path = FALLBACK_PATH;
+			}
+		}
 
 		path_it = 0;
 	}
