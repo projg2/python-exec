@@ -399,7 +399,8 @@ static int try_preferences_from_config(const char* path, int pref)
 			/* == pref intentional here to avoid ++pref on disabled */
 			if (impl_ret == pref)
 				++pref;
-			else if (impl_ret == IMPL_DEFAULT && isatty(fileno(stderr)))
+			else if (impl_ret == IMPL_DEFAULT && isatty(fileno(stderr))
+					&& impl_pref != IMPL_DISABLED)
 				fprintf(stderr, "python-exec: Invalid impl in %s: %s\n",
 						path, buf);
 		}
