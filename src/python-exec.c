@@ -1,6 +1,6 @@
 /* python-exec -- a Gentoo tool to choose the correct Python script
  * variant for currently selected Python implementation.
- * (c) 2012-2016 Michał Górny
+ * (c) 2012-2018 Michał Górny
  * Licensed under the terms of the 2-clause BSD license.
  */
 
