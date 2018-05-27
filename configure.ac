@@ -63,7 +63,7 @@ esac
 
 AC_DEFINE_UNQUOTED([FALLBACK_PATH], ["$with_fallback_path"], [Set to fallback PATH])
 
-AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 subdir-objects parallel-tests])
+AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-bzip2 subdir-objects parallel-tests])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 
