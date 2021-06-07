@@ -1,6 +1,6 @@
 #!@bindir@/python-exec2c@exeext@
 # vim:fileencoding=utf-8:ft=python
-# (c) 2012-2016 Michał Górny
+# (c) 2012-2021 Michał Górny
 # Released under the terms of the 2-clause BSD license.
 #
 # This is not the script you are looking for. This is just a wrapper.
@@ -81,6 +81,9 @@ while data is None:
 			raise
 
 sys.argv[0] = target
+# in python3.9+, __file__ paths are absolute
+if sys.version_info >= (3, 9):
+	target = os.path.abspath(target)
 new_globals['__file__'] = target
 
 exec(data, new_globals)
