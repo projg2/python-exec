@@ -3,26 +3,36 @@
 echo "${TEST_NAME} -- test whether Python wrapper follows (relative) symlinks"
 
 set -- ${PYTHON_IMPLS}
+GOOD=0
+BAD=0
 
-while true; do
-	if [ ${#} -lt 1 ]; then
-		echo 'No working Python interpreter found (?!)' >&2
-		do_exit 77
-	fi
+while [ ${#} -gt 0 ]; do
+	MY_PYTHON="${1}"
+	shift
 
 	# We have to have the proper Python version installed.
-	if ! "${1}" --version >&2; then
-		shift
+	if ! "${MY_PYTHON}" --version >&2; then
+		continue
+	fi
+
+	echo "Testing Python: ${MY_PYTHON}" >&2
+	write_impl "${MY_PYTHON}" "import sys; sys.exit(0)"
+	do_sym "${TEST_TMP}" "${TEST_TMP}.symlink"
+
+	if do_test_noexit "${MY_PYTHON}" "${TEST_TMP}.symlink"; then
+		: $(( GOOD++ ))
 	else
-		break
+		: $(( BAD++ ))
 	fi
 done
 
-MY_PYTHON=${1}
-
-echo "Python used: ${MY_PYTHON}" >&2
-
-write_impl "${MY_PYTHON}" "import sys; sys.exit(0)"
-do_sym "${TEST_TMP}" "${TEST_TMP}.symlink"
-
-do_test "${MY_PYTHON}" "${TEST_TMP}.symlink"
+if [ ${BAD} -eq 0 ]; then
+	if [ ${GOOD} -eq 0 ]; then
+		echo 'No working Python interpreter found (?!)' >&2
+		do_exit 77
+	else
+		do_exit 0
+	fi
+else
+	do_exit 1
+fi

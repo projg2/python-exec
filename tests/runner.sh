@@ -24,12 +24,29 @@ write_impl() {
 }
 
 do_sym() {
-	ln -s "${1}" "${TEST_DIR}/${2}"
+	ln -f -s "${1}" "${TEST_DIR}/${2}"
 }
 
 do_exit() {
 	trap - EXIT
 	exit "${@}"
+}
+
+do_test_noexit() {
+	if [ ${#} -eq 2 ]; then
+		set -- "${1}" "${TEST_DIR}/${2}"
+	else
+		set -- "${TEST_DIR}/${1}"
+	fi
+
+	set +e +x
+	echo "Test command: ${@}" >&2
+
+	"${@}"
+	ret=${?}
+	echo "Test result: ${ret}" >&2
+	set -e -x
+	return ${ret}
 }
 
 do_test() {

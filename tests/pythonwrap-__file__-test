@@ -3,37 +3,43 @@
 echo "${TEST_NAME} -- test whether Python wrapper sets __file__ correctly"
 
 set -- ${PYTHON_IMPLS}
+GOOD=0
+BAD=0
 
-while true; do
-	if [ ${#} -lt 1 ]; then
-		echo 'No working Python interpreter found (?!)' >&2
-		do_exit 77
-	fi
+while [ ${#} -gt 0 ]; do
+	MY_PYTHON="${1}"
+	shift
 
 	# We have to have the proper Python version installed.
-	if ! "${1}" --version >&2; then
-		shift
+	if ! "${MY_PYTHON}" --version >&2; then
+		continue
+	fi
+
+	echo "Testing Python: ${MY_PYTHON}" >&2
+	write_impl "${MY_PYTHON}" "print(__file__)"
+
+	# The value should be the same as if variant was run directly.
+	V_EXP=$("${MY_PYTHON}" "${TEST_DIR}/${MY_PYTHON}/${TEST_TMP}")
+	V_GOT=$("${MY_PYTHON}" "${TEST_DIR}/${TEST_TMP}")
+
+	echo "Expected: ${V_EXP}" >&2
+	echo "Received: ${V_GOT}" >&2
+	if [ "${V_EXP}" = "${V_GOT}" ]; then
+		echo "Correct!" >&2
+		: $(( GOOD++ ))
 	else
-		break
+		echo "No match." >&2
+		: $(( BAD++ ))
 	fi
 done
 
-MY_PYTHON=${1}
-
-echo "Python used: ${MY_PYTHON}" >&2
-
-write_impl "${MY_PYTHON}" "print(__file__)"
-
-# The value should be the same as if variant was run directly.
-V_EXP=$("${MY_PYTHON}" "${TEST_DIR}/${MY_PYTHON}/${TEST_TMP}")
-V_GOT=$("${MY_PYTHON}" "${TEST_DIR}/${TEST_TMP}")
-
-echo "Expected: ${V_EXP}" >&2
-echo "Received: ${V_GOT}" >&2
-if [ "${V_EXP}" = "${V_GOT}" ]; then
-	echo "Correct!" >&2
-	do_exit 0
+if [ ${BAD} -eq 0 ]; then
+	if [ ${GOOD} -eq 0 ]; then
+		echo 'No working Python interpreter found (?!)' >&2
+		do_exit 77
+	else
+		do_exit 0
+	fi
 else
-	echo "No match." >&2
 	do_exit 1
 fi

@@ -3,26 +3,39 @@
 echo "${TEST_NAME} -- test whether Python wrapper works when copied (instead of symlinked)"
 
 set -- ${PYTHON_IMPLS}
-
-while true; do
-	if [ ${#} -lt 1 ]; then
-		echo 'No Python implementation installed (?!)' >&2
-		do_exit 77
-	fi
-
-	# we have to have the proper Python version installed
-	if "${1}" --version >&2; then
-		break
-	fi
-	shift
-done
-
-export EPYTHON=${1}
-
-write_impl "${EPYTHON}" "import sys; sys.exit(0)"
+GOOD=0
+BAD=0
 
 # replace with a copy
 rm "${TEST_DIR}/${TEST_TMP}"
 cp "${TEST_DIR}/python-exec2" "${TEST_DIR}/${TEST_TMP}"
 
-do_test "${EPYTHON}" "${TEST_TMP}"
+while [ ${#} -gt 0 ]; do
+	export EPYTHON="${1}"
+	shift
+
+	# We have to have the proper Python version installed.
+	if ! "${EPYTHON}" --version >&2; then
+		continue
+	fi
+
+	echo "Testing Python: ${EPYTHON}" >&2
+	write_impl "${EPYTHON}" "import sys; sys.exit(0)"
+
+	if do_test_noexit "${EPYTHON}" "${TEST_TMP}"; then
+		: $(( GOOD++ ))
+	else
+		: $(( BAD++ ))
+	fi
+done
+
+if [ ${BAD} -eq 0 ]; then
+	if [ ${GOOD} -eq 0 ]; then
+		echo 'No working Python interpreter found (?!)' >&2
+		do_exit 77
+	else
+		do_exit 0
+	fi
+else
+	do_exit 1
+fi

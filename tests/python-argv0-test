@@ -3,41 +3,47 @@
 echo "${TEST_NAME} -- regression test for argv[0] -> sys.executable setting"
 
 set -- ${PYTHON_IMPLS}
+GOOD=0
+BAD=0
 
-while true; do
-	if [ ${#} -lt 1 ]; then
-		echo 'No working Python interpreter found (?!)' >&2
-		do_exit 77
-	fi
+while [ ${#} -gt 0 ]; do
+	export EPYTHON="${1}"
+	shift
 
 	# We have to have the proper Python version installed.
-	if ! "${1}" --version >&2; then
-		shift
+	if ! "${EPYTHON}" --version >&2; then
+		continue
+	fi
+
+	echo "Testing Python: ${EPYTHON}" >&2
+	PYTHON_PATH=$(command -v "${EPYTHON}")
+
+	mkdir -p "${TEST_DIR}/${EPYTHON}"
+	ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${EPYTHON}/python"
+
+	# replace with C wrapper
+	ln -f -s python-exec2c "${TEST_DIR}/python"
+
+	ORIG_EXE=$("${PYTHON_PATH}" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
+	WRAP_EXE=$("${TEST_DIR}/python" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
+
+	echo "Original realpath(sys.executable): ${ORIG_EXE}"
+	echo "Wrapped realpath(sys.executable): ${WRAP_EXE}"
+
+	if [ "${ORIG_EXE}" = "${WRAP_EXE}" ]; then
+		: $(( GOOD++ ))
 	else
-		break
+		: $(( BAD++ ))
 	fi
 done
 
-export EPYTHON=${1}
-
-echo "Python used: ${EPYTHON}" >&2
-
-PYTHON_PATH=$(command -v "${EPYTHON}")
-
-mkdir -p "${TEST_DIR}/${EPYTHON}"
-ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${EPYTHON}/python"
-
-# replace with C wrapper
-ln -f -s python-exec2c "${TEST_DIR}/python"
-
-ORIG_EXE=$("${PYTHON_PATH}" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
-WRAP_EXE=$("${TEST_DIR}/python" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
-
-echo "Original realpath(sys.executable): ${ORIG_EXE}"
-echo "Wrapped realpath(sys.executable): ${WRAP_EXE}"
-
-if [ "${ORIG_EXE}" = "${WRAP_EXE}" ]; then
-	do_exit 0
+if [ ${BAD} -eq 0 ]; then
+	if [ ${GOOD} -eq 0 ]; then
+		echo 'No working Python interpreter found (?!)' >&2
+		do_exit 77
+	else
+		do_exit 0
+	fi
 else
 	do_exit 1
 fi
