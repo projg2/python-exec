@@ -23,9 +23,9 @@ while [ ${#} -gt 0 ]; do
 	write_impl "${EPYTHON}" "import sys; sys.exit(0)"
 
 	if do_test_noexit "${EPYTHON}" "${TEST_TMP}"; then
-		: $(( GOOD++ ))
+		: $(( GOOD += 1 ))
 	else
-		: $(( BAD++ ))
+		: $(( BAD += 1 ))
 	fi
 done
 

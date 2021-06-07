@@ -22,9 +22,9 @@ while [ ${#} -gt 0 ]; do
 	do_sym "${TEST_TMP}-symII" "${TEST_TMP}-symIII"
 
 	if do_test_noexit "${MY_PYTHON}" "${TEST_TMP}-symIII"; then
-		: $(( GOOD++ ))
+		: $(( GOOD += 1 ))
 	else
-		: $(( BAD++ ))
+		: $(( BAD += 1 ))
 	fi
 done
 

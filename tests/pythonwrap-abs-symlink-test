@@ -20,9 +20,9 @@ while [ ${#} -gt 0 ]; do
 	do_sym "${PWD}/${TEST_DIR}/${TEST_TMP}" "${TEST_TMP}.symlink"
 
 	if do_test_noexit "${MY_PYTHON}" "${TEST_TMP}.symlink"; then
-		: $(( GOOD++ ))
+		: $(( GOOD += 1 ))
 	else
-		: $(( BAD++ ))
+		: $(( BAD += 1 ))
 	fi
 done
 

@@ -26,10 +26,10 @@ while [ ${#} -gt 0 ]; do
 	echo "Received: ${V_GOT}" >&2
 	if [ "${V_EXP}" = "${V_GOT}" ]; then
 		echo "Correct!" >&2
-		: $(( GOOD++ ))
+		: $(( GOOD += 1 ))
 	else
 		echo "No match." >&2
-		: $(( BAD++ ))
+		: $(( BAD += 1 ))
 		do_exit 1
 	fi
 done

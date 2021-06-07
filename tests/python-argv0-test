@@ -31,9 +31,9 @@ while [ ${#} -gt 0 ]; do
 	echo "Wrapped realpath(sys.executable): ${WRAP_EXE}"
 
 	if [ "${ORIG_EXE}" = "${WRAP_EXE}" ]; then
-		: $(( GOOD++ ))
+		: $(( GOOD += 1 ))
 	else
-		: $(( BAD++ ))
+		: $(( BAD += 1 ))
 	fi
 done
 
