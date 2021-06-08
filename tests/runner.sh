@@ -12,7 +12,7 @@ ERROR=99
 # common metadata
 PYTHON_IMPLS=${1}
 TEST=${2}
-TEST_DIR=tests
+TEST_DIR=test/data
 TEST_NAME=${2##*/}
 TEST_TMP=${TEST_NAME}.tmp
 
@@ -77,7 +77,7 @@ is_preferred() {
 				return 0
 				;;
 		esac
-	done <tests/etc/python-exec/python-exec.conf
+	done <test/data/etc/python-exec/python-exec.conf
 
 	set -e -x
 	return 1
@@ -95,7 +95,7 @@ is_disabled() {
 				return 0
 				;;
 		esac
-	done <tests/etc/python-exec/python-exec.conf
+	done <test/data/etc/python-exec/python-exec.conf
 
 	set -e -x
 	return 1

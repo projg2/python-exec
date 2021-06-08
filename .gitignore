@@ -16,11 +16,6 @@ Makefile.in
 /python-exec2c
 
 /test-suite.log
-/tests/print-bufsiz
-/tests/python-exec
-/tests/python-exec2c
-/tests/python-exec-c.c
+/test/data/
 /tests/*.log
-/tests/*.tmp*
 /tests/*.trs
-/tests/python*/

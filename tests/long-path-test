@@ -2,7 +2,7 @@
 
 echo "${TEST_NAME} -- test whether long paths (>BUFSIZ) work"
 
-bufsiz=$(tests/print-bufsiz)
+bufsiz=$(test/data/print-bufsiz)
 
 if [ -z "${bufsiz}" ]; then
 	echo 'BUFSIZ unknown' >&2

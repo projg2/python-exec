@@ -5,9 +5,9 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 bin_PROGRAMS = python-exec2c
 scriptroot_SCRIPTS = python-exec2
 
-check_DATA = tests/etc/python-exec/python-exec.conf
-check_PROGRAMS = tests/print-bufsiz tests/python-exec2c
-check_SCRIPTS = tests/python-exec2
+check_DATA = test/data/etc/python-exec/python-exec.conf
+check_PROGRAMS = test/data/print-bufsiz test/data/python-exec2c
+check_SCRIPTS = test/data/python-exec2
 
 python_exec2c_SOURCES = src/python-exec.c
 python_exec2c_CPPFLAGS = \
@@ -16,22 +16,19 @@ python_exec2c_CPPFLAGS = \
 	-DSYSCONFDIR=\"${sysconfdir}\" \
 	-DNDEBUG
 
-tests_python_exec2c_SOURCES = src/python-exec.c
-# TODO: create dedicated sysconfdir for tests
-tests_python_exec2c_CPPFLAGS = \
+test_data_python_exec2c_SOURCES = src/python-exec.c
+test_data_python_exec2c_CPPFLAGS = \
 	-DEXEEXT=\"${EXEEXT}\" \
-	-DPYTHON_SCRIPTROOT=\"tests\" \
-	-DSYSCONFDIR=\"tests/etc\" \
+	-DPYTHON_SCRIPTROOT=\"test/data\" \
+	-DSYSCONFDIR=\"test/data/etc\" \
 	-UNDEBUG
 
-tests_print_bufsiz_SOURCES = src/print-bufsiz.c
+test_data_print_bufsiz_SOURCES = src/print-bufsiz.c
 
 EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
-	tests/python-exec2 tests/python-exec2c \
-	tests/etc/python-exec/*.conf \
-	tests/*.tmp* tests/*/*.tmp* \
-	tests/python tests/*/python
+	test/data/etc/python-exec/*.conf \
+	test/data/*
 
 python-exec2: src/python-exec.in config.status
 	rm -f $@ $@.tmp
@@ -41,18 +38,18 @@ python-exec2: src/python-exec.in config.status
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
-tests/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
-	$(MKDIR_P) tests/etc/python-exec
+test/data/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
+	$(MKDIR_P) test/data/etc/python-exec
 	rm -f $@ $@.tmp
 	sh $(srcdir)/tests/gen-config.sh $(PYTHON_IMPLS) > $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 
-tests/python-exec2: src/python-exec.in config.status
-	$(MKDIR_P) tests
+test/data/python-exec2: src/python-exec.in config.status
+	$(MKDIR_P) test/data
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|./tests|" \
-		-e "s|[@]PYTHON_SCRIPTROOT@|tests|" \
+	@SED@ -e "s|[@]bindir@|./test/data|" \
+		-e "s|[@]PYTHON_SCRIPTROOT@|test/data|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@

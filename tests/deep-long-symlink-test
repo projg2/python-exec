@@ -2,7 +2,7 @@
 
 echo "${TEST_NAME} -- test whether deep, long (>BUFSIZ) symlinks work"
 
-bufsiz=$(tests/print-bufsiz)
+bufsiz=$(test/data/print-bufsiz)
 
 if [ -z "${bufsiz}" ]; then
 	echo 'BUFSIZ unknown' >&2
