@@ -78,4 +78,9 @@ AC_PROG_SED
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_LINKS([
+	test/conftest.py:test/conftest.py
+	test/test_core.py:test/test_core.py
+	test/test_select.py:test/test_select.py
+])
 AC_OUTPUT
