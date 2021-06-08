@@ -22,7 +22,7 @@ while [ ${#} -gt 0 ]; do
 	ln -f -s "${PYTHON_PATH}" "${TEST_DIR}/${EPYTHON}/python"
 
 	# replace with C wrapper
-	ln -f -s python-exec2c "${TEST_DIR}/python"
+	ln -f -s ../bin/python-exec2c "${TEST_DIR}/python"
 
 	ORIG_EXE=$("${PYTHON_PATH}" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')
 	WRAP_EXE=$("${TEST_DIR}/python" -c 'import os.path, sys; print(os.path.realpath(sys.executable))')

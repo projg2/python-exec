@@ -15,6 +15,6 @@ write_impl "${EPYTHON}" "#!/bin/sh\nexit 0"
 
 # replace with a copy
 rm "${TEST_DIR}/${TEST_TMP}"
-cp "${TEST_DIR}/python-exec2c" "${TEST_DIR}/${TEST_TMP}"
+cp test/bin/python-exec2c "${TEST_DIR}/${TEST_TMP}"
 
 do_test "${TEST_TMP}"

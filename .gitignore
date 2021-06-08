@@ -16,6 +16,7 @@ Makefile.in
 /python-exec2c
 
 /test-suite.log
+/test/bin/
 /test/data/
 /tests/*.log
 /tests/*.trs

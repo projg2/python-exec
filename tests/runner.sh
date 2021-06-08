@@ -106,5 +106,5 @@ trap 'exit 99' EXIT
 set -e -x
 
 rm -f "${TEST_DIR}/${TEST_TMP}"* "${TEST_DIR}"/*/"${TEST_TMP}"*
-ln -s python-exec2 "${TEST_DIR}/${TEST_TMP}"
+ln -s ../bin/python-exec2 "${TEST_DIR}/${TEST_TMP}"
 . "${TEST}"

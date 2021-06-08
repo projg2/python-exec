@@ -6,8 +6,8 @@ bin_PROGRAMS = python-exec2c
 scriptroot_SCRIPTS = python-exec2
 
 check_DATA = test/data/etc/python-exec/python-exec.conf
-check_PROGRAMS = test/data/print-bufsiz test/data/python-exec2c
-check_SCRIPTS = test/data/python-exec2
+check_PROGRAMS = test/bin/print-bufsiz test/bin/python-exec2c
+check_SCRIPTS = test/bin/python-exec2
 
 python_exec2c_SOURCES = src/python-exec.c
 python_exec2c_CPPFLAGS = \
@@ -16,17 +16,18 @@ python_exec2c_CPPFLAGS = \
 	-DSYSCONFDIR=\"${sysconfdir}\" \
 	-DNDEBUG
 
-test_data_python_exec2c_SOURCES = src/python-exec.c
-test_data_python_exec2c_CPPFLAGS = \
+test_bin_python_exec2c_SOURCES = src/python-exec.c
+test_bin_python_exec2c_CPPFLAGS = \
 	-DEXEEXT=\"${EXEEXT}\" \
 	-DPYTHON_SCRIPTROOT=\"test/data\" \
 	-DSYSCONFDIR=\"test/data/etc\" \
 	-UNDEBUG
 
-test_data_print_bufsiz_SOURCES = src/print-bufsiz.c
+test_bin_print_bufsiz_SOURCES = src/print-bufsiz.c
 
 EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
+	test/bin/* \
 	test/data/etc/python-exec/*.conf \
 	test/data/* test/data/etc/python-exec/* test/data/*/*
 
@@ -45,10 +46,10 @@ test/data/etc/python-exec/python-exec.conf: tests/gen-config.sh config.status
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 
-test/data/python-exec2: src/python-exec.in config.status
-	$(MKDIR_P) test/data
+test/bin/python-exec2: src/python-exec.in config.status
+	$(MKDIR_P) test/bin
 	rm -f $@ $@.tmp
-	@SED@ -e "s|[@]bindir@|./test/data|" \
+	@SED@ -e "s|[@]bindir@|./test/bin|" \
 		-e "s|[@]PYTHON_SCRIPTROOT@|test/data|" \
 		-e "s|[@]exeext@|${EXEEXT}|g" $< > $@.tmp
 	chmod a-w,a+x $@.tmp

@@ -17,6 +17,6 @@ echo "EPYTHON: ${EPYTHON}" >&2
 
 # replace with C wrapper
 rm "${TEST_DIR}/${TEST_TMP}"
-ln -s python-exec2c "${TEST_DIR}/${TEST_TMP}"
+ln -s ../bin/python-exec2c "${TEST_DIR}/${TEST_TMP}"
 
 do_test "${TEST_TMP}"

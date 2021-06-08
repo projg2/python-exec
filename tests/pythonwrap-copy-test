@@ -8,7 +8,7 @@ BAD=0
 
 # replace with a copy
 rm "${TEST_DIR}/${TEST_TMP}"
-cp "${TEST_DIR}/python-exec2" "${TEST_DIR}/${TEST_TMP}"
+cp test/bin/python-exec2 "${TEST_DIR}/${TEST_TMP}"
 
 while [ ${#} -gt 0 ]; do
 	export EPYTHON="${1}"
