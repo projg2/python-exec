@@ -28,7 +28,7 @@ test_data_print_bufsiz_SOURCES = src/print-bufsiz.c
 EXTRA_DIST = src/python-exec.in config/python-exec.conf.example
 CLEANFILES = python-exec2 \
 	test/data/etc/python-exec/*.conf \
-	test/data/*
+	test/data/* test/data/etc/python-exec/* test/data/*/*
 
 python-exec2: src/python-exec.in config.status
 	rm -f $@ $@.tmp
