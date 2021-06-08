@@ -18,5 +18,6 @@ Makefile.in
 /test-suite.log
 /test/bin/
 /test/data/
+/test/__pycache__/
 /tests/*.log
 /tests/*.trs
