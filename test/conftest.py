@@ -10,6 +10,11 @@ import subprocess
 import pytest
 
 
+for x in ('print-bufsiz', 'python-exec2', 'python-exec2c'):
+    if not os.access(f'test/bin/{x}', os.X_OK):
+        raise RuntimeError('Please run make check to build test executables')
+
+
 def python_impls():
     out = subprocess.check_output(['test/bin/python-exec2c',
                                    '--list-implementations'])
