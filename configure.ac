@@ -26,7 +26,6 @@ done
 
 AC_DEFINE_UNQUOTED([PYTHON_IMPLS], [$python_impls],
 	[Set to the list of supported Python implementations])
-AC_SUBST([PYTHON_IMPLS], [$with_python_impls])
 AC_DEFINE_UNQUOTED([MAX_EPYTHON_LEN], [$max_len],
 	[Set to the maximum length of EPYTHON (implementation name)])
 

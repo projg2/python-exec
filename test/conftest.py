@@ -5,15 +5,20 @@
 import os
 import pathlib
 import shutil
+import subprocess
 
 import pytest
 
 
-try:
-    PYTHON_IMPLS = [x for x in os.environ['PYTHON_IMPLS'].split()
-                    if shutil.which(x) is not None]
-except KeyError:
-    raise RuntimeError('Please set PYTHON_IMPLS to list of supported impls')
+def python_impls():
+    out = subprocess.check_output(['test/bin/python-exec2c',
+                                   '--list-implementations'])
+    for x in out.decode().split():
+        if shutil.which(x) is not None:
+            yield x
+
+
+PYTHON_IMPLS = list(reversed(list(python_impls())))
 
 
 @pytest.fixture
