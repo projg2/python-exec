@@ -48,7 +48,10 @@ test/bin/python-exec2: src/python-exec.in config.status
 	mv $@.tmp $@
 
 check-local:
-	PYTHON_IMPLS="$(PYTHON_IMPLS)" pytest -vv -ra -l test
+	PYTHON_IMPLS="$(PYTHON_IMPLS)" pytest -vv -ra -l -m "not symlink" test
+if HAVE_READLINK
+	PYTHON_IMPLS="$(PYTHON_IMPLS)" pytest -vv -ra -l -m "symlink" test
+endif
 
 EXTRA_DIST += COPYING NEWS README
 NEWS: configure.ac Makefile.am

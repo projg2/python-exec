@@ -106,6 +106,7 @@ def test___file__(test_dir, every_python, copy_method):
                                                        'test')]))
 
 
+@pytest.mark.symlink
 @pytest.mark.parametrize('transform', [None, os.path.abspath])
 @pytest.mark.parametrize('depth', [1, 3])
 def test_symlink(wrapper_runner_program, transform, depth):
