@@ -74,21 +74,35 @@ def test_epython(nonbest_python, wrapper, all_wrapped, config, pyexec_conf):
             f'{nonbest_python}\n'.encode('ASCII'))
 
 
-@pytest.mark.parametrize('config', ['python-exec.conf', 'test.conf'])
-def test_conf(nonbest_python, wrapper, all_wrapped, config, pyexec_conf):
+@pytest.mark.parametrize(
+    'config,ignored_config',
+    [('python-exec.conf', ''),
+     ('test.conf', ''),
+     ('test.conf', 'python-exec.conf'),
+     ])
+def test_conf(nonbest_python, wrapper, all_wrapped, config, ignored_config,
+              pyexec_conf):
     """Test that python-exec.conf overrides the default order."""
     env = dict(os.environ)
     env.pop('EPYTHON', None)
     with pyexec_conf.open(config) as f:
         f.write(f'{nonbest_python}\n')
+    if ignored_config:
+        with pyexec_conf.open(ignored_config) as f:
+            f.write(f'{PYTHON_IMPLS[-1]}\n')
     assert (subprocess.check_output([wrapper], env=env) ==
             f'{nonbest_python}\n'.encode('ASCII'))
 
 
-@pytest.mark.parametrize('config', ['python-exec.conf', 'test.conf'])
+@pytest.mark.parametrize(
+    'config,ignored_config',
+    [('python-exec.conf', ''),
+     ('test.conf', ''),
+     ('test.conf', 'python-exec.conf'),
+     ])
 @pytest.mark.parametrize('epython_set', ['', 'epython'])
 def test_conf_disable(nonbest_python, wrapper, all_wrapped, config,
-                      pyexec_conf, epython_set):
+                      ignored_config, pyexec_conf, epython_set):
     """Test that disabling impls overrides everything."""
     env = dict(os.environ)
     with pyexec_conf.open(config) as f:
@@ -97,6 +111,9 @@ def test_conf_disable(nonbest_python, wrapper, all_wrapped, config,
             if python == nonbest_python:
                 break
             f.write(f'-{python}\n')
+    if ignored_config:
+        with pyexec_conf.open(ignored_config) as f:
+            f.write(f'{PYTHON_IMPLS[-1]}\n')
     if not epython_set:
         del env['EPYTHON']
     assert (subprocess.check_output([wrapper], env=env) ==
