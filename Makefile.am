@@ -47,6 +47,8 @@ test/bin/python-exec2: src/python-exec.in config.status
 	chmod a-w,a+x $@.tmp
 	mv $@.tmp $@
 
+EXTRA_DIST += pytest.ini
+
 check-local:
 	pytest -vv -ra -l -m "not symlink" test
 if HAVE_READLINK
