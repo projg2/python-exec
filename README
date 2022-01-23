@@ -10,10 +10,6 @@ python-exec is a wrapper for Python scripts and executables designed
 in order to facilitate the support for installing multiple Python
 implementations in parallel.
 
-python-exec provides support for wrapping Python implementations whose
-identifiers (executable basenames) are passed during configure call
-(obligatory --with-python-impls parameter).
-
 In order for python-exec to work, wrapped scripts and executables need
 to be installed in subdirectories of scriptroot (defined through
 --with-python-scriptroot parameter, ${prefix}/lib/python-exec

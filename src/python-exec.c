@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include <errno.h>
 #include <unistd.h>
 
@@ -26,7 +29,7 @@
 /* Python script root directory */
 const char python_scriptroot[] = PYTHON_SCRIPTROOT "/";
 /* Maximum length of an EPYTHON value. */
-const size_t max_epython_len = MAX_EPYTHON_LEN;
+const size_t max_epython_len = BUFFER_SIZE - sizeof(PYTHON_SCRIPTROOT);
 
 const char path_sep = '/';
 const char sys_path_sep = ':';
@@ -53,21 +56,38 @@ struct python_impl *all_python_impls = NULL;
  */
 static int init_python_impls()
 {
-	static const struct python_impl impls[] = { PYTHON_IMPLS };
-	const struct python_impl *i;
+	DIR *d;
+	int d_fd;
+	struct dirent *de;
+	struct stat stat;
 	struct python_impl *impl;
 
-	for (i = impls; i->name; ++i)
+	d = opendir(python_scriptroot);
+	if (!d)
+		return 0;
+	d_fd = dirfd(d);
+	errno = 0;
+	while (de = readdir(d))
 	{
+		if (de->d_name[0] == '.')
+			continue;
+		if (fstatat(d_fd, de->d_name, &stat, /* flags= */ 0))
+			return 0;
+		if (!S_ISDIR(stat.st_mode))
+			continue;
+
 		impl = malloc(sizeof(*impl));
 		if (!impl)
 			return 0;
-		impl->name = i->name;
-		impl->preference = i->preference;
+		impl->name = strdup(de->d_name);
+		if (!impl->name)
+			return 0;
+		impl->preference = IMPL_DEFAULT;
 		impl->next = all_python_impls;
 		all_python_impls = impl;
 	}
-	return 1;
+	closedir(d);
+	return !errno;
 }
 
 /**

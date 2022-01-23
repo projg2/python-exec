@@ -3,32 +3,6 @@ AC_INIT([python-exec], [2.4.8])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_ARG_WITH([python-impls],
-	[AS_HELP_STRING([--with-python-impls=IMPLS],
-		[The list of supported Python, most preferred last])])
-
-case $with_python_impls in
-	yes|no|"")
-		AC_MSG_ERROR([Python implementations must be specified using --with-python-impls])
-		;;
-esac
-
-# generate array of implementations
-python_impls='{ 0, 0 }'
-max_len=0
-for i in $with_python_impls
-do
-	python_impls="{ \"$i\", IMPL_DEFAULT }, $python_impls"
-	if test $max_len -lt ${#i}; then
-		max_len=${#i}
-	fi
-done
-
-AC_DEFINE_UNQUOTED([PYTHON_IMPLS], [$python_impls],
-	[Set to the list of supported Python implementations])
-AC_DEFINE_UNQUOTED([MAX_EPYTHON_LEN], [$max_len],
-	[Set to the maximum length of EPYTHON (implementation name)])
-
 AC_ARG_WITH([buffer-size],
 	[AS_HELP_STRING([--with-buffer-size=SIZE],
 		[Initial static buffer size (default: BUFSIZ)])])
