@@ -41,11 +41,34 @@ struct python_impl
 {
 	const char* name;
 	int preference;
+	struct python_impl *next;
 };
 
-struct python_impl python_impls[] = {
-	PYTHON_IMPLS
-};
+struct python_impl *all_python_impls = NULL;
+
+/**
+ * Initialise python_impls.
+ *
+ * Returns 1 on success, 0 on failure.
+ */
+static int init_python_impls()
+{
+	static const struct python_impl impls[] = { PYTHON_IMPLS };
+	const struct python_impl *i;
+	struct python_impl *impl;
+
+	for (i = impls; i->name; ++i)
+	{
+		impl = malloc(sizeof(*impl));
+		if (!impl)
+			return 0;
+		impl->name = i->name;
+		impl->preference = i->preference;
+		impl->next = all_python_impls;
+		all_python_impls = impl;
+	}
+	return 1;
+}
 
 /**
  * Find basename component in path.
@@ -327,7 +350,7 @@ static int set_impl_preference(const char* impl, int pref)
 {
 	struct python_impl* i;
 
-	for (i = python_impls; i->name; ++i)
+	for (i = all_python_impls; i; i = i->next)
 	{
 		if (!strcmp(impl, i->name))
 		{
@@ -592,6 +615,13 @@ int main(int argc, char* argv[])
 #	endif
 #endif
 
+	if (!init_python_impls())
+	{
+		fprintf(stderr, "%s: failure to initialise implementation list from %s.\n",
+				argv[0], PYTHON_SCRIPTROOT);
+		return 127;
+	}
+
 	/* figure out basename from argv[0] */
 	slash = strrchr(argv[0], path_sep);
 	/* if we are called directly (via a shebang), script comes
@@ -624,7 +654,7 @@ int main(int argc, char* argv[])
 		else if (!strcmp(script, "--list-implementations")
 				|| !strcmp(script, "-l"))
 		{
-			for (i = python_impls; i->name; ++i)
+			for (i = all_python_impls; i; i = i->next)
 			{
 				fprintf(stdout, "%s\n", i->name);
 			}
@@ -683,7 +713,7 @@ int main(int argc, char* argv[])
 	{
 		int found_any = 0;
 
-		for (i = python_impls; i->name; ++i)
+		for (i = all_python_impls; i; i = i->next)
 		{
 			if (i->preference != j)
 				continue;
