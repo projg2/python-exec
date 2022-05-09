@@ -90,8 +90,8 @@ while data is None:
             raise
 
 sys.argv[0] = target
-# in python3.9+, __file__ paths are absolute
-if sys.version_info >= (3, 9):
+# in python3.9+, __file__ paths are absolute (but not pypy3.9)
+if sys.version_info >= (3, 9) and sys.implementation.name != "pypy":
     target = os.path.abspath(target)
 new_globals['__file__'] = target
 
