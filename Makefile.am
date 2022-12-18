@@ -55,8 +55,4 @@ if HAVE_READLINK
 	pytest -vv -ra -l -m "symlink" test
 endif
 
-EXTRA_DIST += COPYING NEWS README
-NEWS: configure.ac Makefile.am
-	git for-each-ref refs/tags --sort '-*committerdate' \
-		--format '# %(tag) (%(*committerdate:short))%0a%(contents:body)' \
-		> NEWS
+EXTRA_DIST += COPYING README
