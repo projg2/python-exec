@@ -1,5 +1,5 @@
 AC_PREREQ([2.60])
-AC_INIT([python-exec], [2.4.9])
+AC_INIT([python-exec], [2.4.10])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
