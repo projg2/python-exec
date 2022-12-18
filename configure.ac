@@ -75,7 +75,7 @@ AM_CONDITIONAL([HAVE_READLINK], [test $ac_cv_func_readlink = yes])
 AC_PROG_MKDIR_P
 AC_PROG_SED
 
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_LINKS([
 	test/conftest.py:test/conftest.py
